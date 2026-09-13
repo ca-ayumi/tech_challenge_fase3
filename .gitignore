@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Ambiente
+.env
+
+# Artefatos gerados
+logs/*.log
+logs/*.jsonl
+dados/hospital.db
+modelos/adaptador-lora/checkpoints/
+modelos/adaptador-lora/0*_adapters.safetensors
+
+# Sistema
+.DS_Store
+.idea/
+.vscode/

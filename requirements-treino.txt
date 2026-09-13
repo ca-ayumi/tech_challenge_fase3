@@ -1,0 +1,3 @@
+# Fine-tuning e inferencia local em Apple Silicon (caminho padrao do projeto).
+-r requirements.txt
+mlx-lm>=0.20
