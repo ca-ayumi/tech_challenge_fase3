@@ -1,0 +1,51 @@
+{
+  "gerado_em": "2026-09-12T15:48:11",
+  "semente": 42,
+  "fontes": {
+    "documentos": 14,
+    "trechos": 96,
+    "prontuarios": 12,
+    "identificadores_anonimizados_em_evolucoes": {
+      "nome_paciente": 17,
+      "cpf": 2,
+      "telefone": 6,
+      "prontuario": 2,
+      "cns": 1,
+      "rg": 1
+    }
+  },
+  "curadoria": {
+    "total_entrada": 317,
+    "total_saida": 313,
+    "descartados": {
+      "duplicata_aproximada": 4
+    },
+    "por_categoria": {
+      "duvida_protocolo": 34,
+      "recusa_prescricao": 40,
+      "fora_escopo": 7,
+      "emergencia": 2,
+      "governanca": 4,
+      "documento": 3,
+      "conduta_paciente": 6,
+      "alerta": 15,
+      "resumo": 1,
+      "protocolo_secao": 177,
+      "contexto_paciente": 24
+    },
+    "duplicatas_exatas": 0,
+    "duplicatas_aproximadas": 4,
+    "pii_residual": {},
+    "tamanhos": {
+      "resposta_media": 535.1,
+      "resposta_maxima": 1131,
+      "pergunta_media": 61.9
+    }
+  },
+  "particoes": {
+    "treino": 255,
+    "validacao": 29,
+    "teste": 29
+  },
+  "prompt_sistema_caracteres": 956
+}
