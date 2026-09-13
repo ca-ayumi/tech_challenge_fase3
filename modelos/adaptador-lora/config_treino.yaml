@@ -1,0 +1,22 @@
+model: "mlx-community/Qwen2.5-1.5B-Instruct-4bit"
+train: true
+data: "/Users/camila/Documents/FIAP - IA para DEVS/TECH_CHALLENGE_FASE3/dados/processados"
+fine_tune_type: "lora"
+optimizer: "adamw"
+num_layers: 8
+batch_size: 2
+iters: 400
+val_batches: 10
+learning_rate: 1e-05
+steps_per_report: 20
+steps_per_eval: 50
+adapter_path: "/Users/camila/Documents/FIAP - IA para DEVS/TECH_CHALLENGE_FASE3/modelos/adaptador-lora"
+save_every: 100
+max_seq_length: 1280
+grad_checkpoint: true
+mask_prompt: true
+seed: 42
+lora_parameters:
+  rank: 16
+  scale: 20.0
+  dropout: 0.05
