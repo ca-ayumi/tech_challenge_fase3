@@ -1,0 +1,52 @@
+graph TB
+    subgraph entrada["Entrada"]
+        U["Profissional<br/>(medico, enfermeiro, farmaceutico)"]
+        UI["Interface<br/>Streamlit / CLI"]
+    end
+
+    subgraph fluxo["Fluxo LangGraph"]
+        T["triagem<br/><i>guardrail de entrada</i>"]
+        R["recusar<br/><i>resposta por regra</i>"]
+        CP["carregar_contexto_paciente"]
+        EX["verificar_exames_pendentes"]
+        RG["avaliar_regras<br/><i>14 regras deterministicas</i>"]
+        RP["recuperar_protocolos<br/><i>BM25</i>"]
+        GR["gerar_resposta<br/><i>LLM ajustada</i>"]
+        VS["validar_saida<br/><i>guardrail de saida</i>"]
+        AL["emitir_alertas"]
+        EXP["explicar"]
+        VH["abrir_validacao"]
+        AU["concluir<br/><i>auditoria</i>"]
+    end
+
+    subgraph dados["Dados institucionais"]
+        BD[("SQLite<br/>prontuarios, exames,<br/>alertas, validacoes,<br/>auditoria")]
+        DOC[("Protocolos<br/>96 secoes citaveis")]
+    end
+
+    subgraph modelo["Modelo"]
+        BASE["Qwen2.5-1.5B-Instruct<br/>4-bit"]
+        LORA["Adaptador LoRA<br/>5,3M parametros"]
+    end
+
+    U --> UI --> T
+    T -->|bloqueada| R --> AU
+    T -->|com paciente| CP --> EX --> RG --> RP
+    T -->|duvida geral| RP
+    RP --> GR --> VS --> AL --> EXP --> VH --> AU
+    AU --> UI
+
+    CP -.consulta.-> BD
+    EX -.consulta.-> BD
+    RG -.consulta.-> BD
+    RP -.consulta.-> DOC
+    GR -.usa.-> BASE
+    BASE -.+.-> LORA
+    AL -.grava.-> BD
+    VH -.grava.-> BD
+    AU -.grava.-> BD
+
+    classDef seguranca fill:#ffe8e8,stroke:#c62828
+    classDef dados fill:#e8f4ff,stroke:#1565c0
+    class T,R,VS,VH seguranca
+    class BD,DOC dados

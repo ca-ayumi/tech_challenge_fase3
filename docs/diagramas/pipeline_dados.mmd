@@ -1,0 +1,36 @@
+graph LR
+    subgraph brutos["dados/brutos"]
+        P["10 protocolos<br/>markdown"]
+        M["4 modelos de<br/>documento"]
+        F["60 perguntas<br/>frequentes"]
+        PR["12 prontuarios<br/>com PII ficticia"]
+    end
+
+    subgraph pipeline["Pipeline"]
+        PRE["preprocessamento<br/><i>secoes citaveis</i>"]
+        ANON["anonimizacao<br/><i>remover + pseudonimizar</i>"]
+        GEN["geracao de exemplos<br/><i>6 categorias</i>"]
+        CUR["curadoria<br/><i>qualidade, PII, dedup</i>"]
+        DIV["divisao estratificada"]
+    end
+
+    subgraph saida["dados/processados"]
+        TR["train.jsonl<br/>255"]
+        VA["valid.jsonl<br/>29"]
+        TE["test.jsonl<br/>29"]
+        REL["relatorio_dataset.json"]
+    end
+
+    BD[("hospital.db<br/><i>dados identificados,<br/>so em execucao</i>")]
+
+    P --> PRE
+    M --> PRE
+    PRE --> ANON
+    F --> ANON
+    PR --> ANON
+    PR ==> BD
+    ANON --> GEN --> CUR --> DIV
+    DIV --> TR
+    DIV --> VA
+    DIV --> TE
+    CUR --> REL
