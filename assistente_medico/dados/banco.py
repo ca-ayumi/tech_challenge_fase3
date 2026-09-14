@@ -13,10 +13,11 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 from ..config import CAMINHOS
 
@@ -148,7 +149,6 @@ CREATE INDEX IF NOT EXISTS idx_auditoria_interacao ON auditoria (interacao);
 CREATE INDEX IF NOT EXISTS idx_alertas_prontuario ON alertas (prontuario, status);
 """
 
-# Apenas estas tabelas podem ser lidas pela ferramenta de consulta livre.
 TABELAS_CONSULTAVEIS = {
     "pacientes", "comorbidades", "alergias", "medicacoes", "sinais_vitais",
     "exames", "protocolos_ativos", "eventos", "evolucoes", "alertas",
@@ -162,7 +162,6 @@ class BancoHospital:
         self.caminho = Path(caminho or CAMINHOS.banco)
         self.caminho.parent.mkdir(parents=True, exist_ok=True)
 
-    # ------------------------------------------------------------- conexao
     @contextmanager
     def conectar(self) -> Iterator[sqlite3.Connection]:
         conexao = sqlite3.connect(self.caminho)
@@ -189,7 +188,6 @@ class BancoHospital:
                 return False
             return conexao.execute("SELECT count(*) AS total FROM pacientes").fetchone()["total"] > 0
 
-    # ------------------------------------------------------------- escrita
     def popular(self, prontuarios: list[dict[str, Any]], limpar: bool = True) -> int:
         """Carrega os prontuarios sinteticos no banco."""
         self.criar_esquema()
@@ -274,7 +272,6 @@ class BancoHospital:
                 )
         return len(prontuarios)
 
-    # -------------------------------------------------------------- leitura
     def _consultar(self, sql: str, parametros: tuple = ()) -> list[dict[str, Any]]:
         with self.conectar() as conexao:
             return [dict(linha) for linha in conexao.execute(sql, parametros).fetchall()]
@@ -374,7 +371,6 @@ class BancoHospital:
             normalizado = f"{normalizado} LIMIT {limite}"
         return self._consultar(normalizado)
 
-    # ------------------------------------------------------ alertas e trilha
     def registrar_alerta(self, prioridade: str, categoria: str, mensagem: str,
                          prontuario: str | None = None, fonte: str | None = None,
                          interacao: str | None = None) -> int:

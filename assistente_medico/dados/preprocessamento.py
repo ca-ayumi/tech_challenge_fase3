@@ -60,10 +60,10 @@ class Documento:
 class Trecho:
     """Uma secao citavel de um documento."""
 
-    referencia: str          # "PROT-SEP-001 §4"
-    documento: str           # "PROT-SEP-001"
+    referencia: str
+    documento: str
     titulo_documento: str
-    secao: str               # "4"
+    secao: str
     titulo_secao: str
     texto: str
     tipo: str

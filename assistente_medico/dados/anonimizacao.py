@@ -21,14 +21,14 @@ import hmac
 import os
 import re
 import unicodedata
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable, Literal
+from typing import Literal
 
 Estrategia = Literal["remover", "pseudonimizar", "manter"]
 
 SAL_PADRAO = "sal-de-desenvolvimento-trocar-em-producao"
 
-# Prefixos usados nos codigos pseudonimizados, por tipo de identificador.
 ROTULOS = {
     "cpf": "CPF",
     "cns": "CNS",
@@ -59,8 +59,6 @@ ESTRATEGIA_PADRAO: dict[str, Estrategia] = {
     "crm": "pseudonimizar",
 }
 
-# A ordem importa: padroes mais especificos sao avaliados primeiro para que
-# uma sequencia de 15 digitos (CNS) nao seja capturada como CPF, por exemplo.
 PADROES: list[tuple[str, re.Pattern[str]]] = [
     ("email", re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")),
     ("cns", re.compile(r"\b\d{3}[\s.]?\d{4}[\s.]?\d{4}[\s.]?\d{4}\b")),
@@ -94,7 +92,6 @@ PADROES: list[tuple[str, re.Pattern[str]]] = [
     ),
 ]
 
-# Termos capitalizados que nao devem ser confundidos com nomes proprios.
 NAO_SAO_NOMES = {
     "pronto", "socorro", "unidade", "terapia", "intensiva", "enfermaria", "hospital",
     "protocolo", "paciente", "medico", "medica", "escala", "glasgow", "sao", "santo",
@@ -165,7 +162,6 @@ class Anonimizador:
         self._padrao_nomes: re.Pattern[str] | None = None
         self.registrar_nomes(nomes_conhecidos)
 
-    # ------------------------------------------------------------------ nomes
     def registrar_nomes(self, nomes: Iterable[str], tipo: str = "nome_paciente") -> None:
         """Adiciona nomes do cadastro a serem reconhecidos no texto livre."""
         novos = {n.strip(): tipo for n in nomes if n and len(n.strip()) > 3}
@@ -179,18 +175,15 @@ class Anonimizador:
         if not self._nomes_conhecidos:
             self._padrao_nomes = None
             return
-        # Nomes mais longos primeiro, para que o nome completo venca o parcial.
         alternativas = sorted(self._nomes_conhecidos, key=len, reverse=True)
         partes = []
         for nome in alternativas:
             partes.append(re.escape(nome))
             tokens = nome.split()
             if len(tokens) >= 2:
-                # Tambem captura "Nome Sobrenome" quando o registro tem nome do meio.
                 partes.append(re.escape(f"{tokens[0]} {tokens[-1]}"))
         self._padrao_nomes = re.compile(r"\b(?:" + "|".join(partes) + r")\b")
 
-    # ------------------------------------------------------- pseudonimizacao
     def pseudonimo(self, tipo: str, valor: str) -> str:
         """Codigo estavel para um valor: o mesmo valor gera sempre o mesmo codigo."""
         digest = hmac.new(self.sal, _normalizar(valor).encode("utf-8"), hashlib.sha256)
@@ -204,13 +197,11 @@ class Anonimizador:
             return estrategia, self.pseudonimo(tipo, valor)
         return estrategia, f"[{ROTULOS.get(tipo, tipo.upper())}]"
 
-    # ------------------------------------------------------------- deteccao
     def _detectar(self, texto: str) -> list[Ocorrencia]:
         brutas: list[tuple[str, int, int, str]] = []
 
         for tipo, padrao in PADROES:
             for achado in padrao.finditer(texto):
-                # Para prontuario, so o numero e substituido (o rotulo fica legivel).
                 if tipo == "prontuario" and achado.groups():
                     inicio, fim = achado.span(1)
                 else:
@@ -225,8 +216,6 @@ class Anonimizador:
 
         brutas.extend(self._detectar_nomes_heuristicos(texto))
 
-        # Resolve sobreposicoes: vence a ocorrencia mais longa e, em empate,
-        # a que comeca antes.
         brutas.sort(key=lambda item: (item[1], -(item[2] - item[1])))
         selecionadas: list[tuple[str, int, int, str]] = []
         ultimo_fim = -1
@@ -244,9 +233,6 @@ class Anonimizador:
 
     def _detectar_nomes_heuristicos(self, texto: str) -> list[tuple[str, int, int, str]]:
         """Captura sequencias de nomes proprios apos marcadores como 'paciente' ou 'Sr.'."""
-        # O marcador e case-insensitive, mas a parte do nome NAO pode ser: exigir
-        # inicial maiuscula e o que separa "paciente Maria Silva" de
-        # "paciente em decubito dorsal".
         padrao = re.compile(
             r"\b(?i:paciente|acompanhante|responsavel|respons[aá]vel|filho|filha|irm[aã]o|"
             r"irm[aã]|esposa|marido|m[aã]e|pai|vizinho|sr\.?|sra\.?)\s+"
@@ -265,7 +251,6 @@ class Anonimizador:
             achados.append(("nome_paciente", achado.start(1), achado.end(1), valor))
         return achados
 
-    # ---------------------------------------------------------------- API
     def anonimizar(self, texto: str) -> ResultadoAnonimizacao:
         """Retorna o texto anonimizado e a lista de identificadores tratados."""
         if not texto:
@@ -297,9 +282,6 @@ class Anonimizador:
             "data_nascimento", "medico_responsavel", "autor",
         }
         if isinstance(dado, dict):
-            # "nome" so identifica uma pessoa quando o dicionario e um cadastro de
-            # pessoa. Em {"codigo": "HMG", "nome": "Hemograma completo"} e o nome
-            # do exame, e apagar isso destruiria o dado clinico.
             eh_cadastro_de_pessoa = bool(
                 {"cpf", "cns", "rg", "data_nascimento", "prontuario"} & set(dado)
             )

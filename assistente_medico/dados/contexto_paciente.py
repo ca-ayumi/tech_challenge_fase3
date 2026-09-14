@@ -93,7 +93,7 @@ class ContextoPaciente:
     exames_liberados: list[dict[str, Any]] = field(default_factory=list)
     exames_pendentes: list[dict[str, Any]] = field(default_factory=list)
     eventos: list[dict[str, Any]] = field(default_factory=list)
-    nome_exibicao: str = ""   # usado apenas na interface, nunca no prompt
+    nome_exibicao: str = ""
 
     @property
     def identificacao_segura(self) -> str:
@@ -111,7 +111,6 @@ class ContextoPaciente:
     def tem_protocolo(self, identificador: str) -> bool:
         return any(p["protocolo"] == identificador for p in self.protocolos)
 
-    # --------------------------------------------------------------- texto
     def como_texto(self) -> str:
         """Serializa o contexto para o prompt, sem identificadores diretos."""
         idade = f"{self.idade} anos" if self.idade is not None else "idade nao informada"

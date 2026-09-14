@@ -25,34 +25,28 @@ def _concatenar(antigo: list | None, novo: list | None) -> list:
 class EstadoAssistente(TypedDict, total=False):
     """Tudo que o fluxo conhece sobre uma interacao."""
 
-    # Entrada
     interacao: str
     pergunta: str
     perfil: str
     usuario: str
     prontuario_informado: str | None
 
-    # Triagem
-    categoria: str            # protocolo | paciente | documento | recusa | emergencia
+    categoria: str
     permitido: bool
     intencao: str
 
-    # Contexto
     prontuario: str | None
     contexto_paciente: str
     campos_prontuario: list[str]
     exames_pendentes: list[dict[str, Any]]
 
-    # Recuperacao
     contexto_documentos: str
     recuperados: list[dict[str, Any]]
 
-    # Geracao
     resposta_bruta: str
     resposta: str
     metadados_modelo: dict[str, Any]
 
-    # Seguranca e governanca
     violacoes: Annotated[list[dict[str, Any]], _concatenar]
     avisos: Annotated[list[str], _concatenar]
     alertas: Annotated[list[dict[str, Any]], _concatenar]
@@ -60,7 +54,6 @@ class EstadoAssistente(TypedDict, total=False):
     validacao_id: int | None
     explicacao: dict[str, Any]
 
-    # Diagnostico de execucao
     etapas: Annotated[list[str], _concatenar]
     erro: str | None
 

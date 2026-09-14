@@ -20,11 +20,10 @@ from __future__ import annotations
 import argparse
 import json
 import random
-import re
-from dataclasses import asdict
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from ..config import CAMINHOS, TREINO
 from ..finetuning.formato import (
@@ -104,7 +103,6 @@ def _contexto_de_fontes(fontes: Iterable[str], indice: dict[str, Trecho],
     return "\n\n".join(blocos)
 
 
-# ------------------------------------------------------------------ geradores
 def exemplos_do_faq(caminho: Path, indice: dict[str, Trecho],
                     anonimizador: Anonimizador,
                     aleatorio: random.Random) -> list[dict[str, Any]]:
@@ -122,8 +120,6 @@ def exemplos_do_faq(caminho: Path, indice: dict[str, Trecho],
             fontes = [_fonte_formatada(f, indice) for f in item.get("fontes", [])]
             corpo = anonimizador.anonimizar_texto(item["resposta"])
             pergunta = anonimizador.anonimizar_texto(item["pergunta"])
-            # Metade dos exemplos recebe o contexto recuperado, para que o modelo
-            # aprenda tanto a responder com apoio de RAG quanto sem ele.
             contexto = (_contexto_de_fontes(item.get("fontes", []), indice)
                         if aleatorio.random() < 0.5 else "")
             exemplos.append({
@@ -154,8 +150,6 @@ def exemplos_de_protocolos(trechos: list[Trecho], anonimizador: Anonimizador,
             pergunta = modelo.format(documento=trecho.documento, secao=secao_legivel)
             corpo = _condensar(texto)
             fonte = f"{trecho.referencia} — {trecho.titulo_secao}"
-            # A primeira variante e respondida com o trecho no contexto (RAG);
-            # a segunda, sem contexto, exercitando o conhecimento internalizado.
             contexto = trecho.como_contexto() if indice_modelo == 0 else ""
             exemplos.append({
                 "categoria": "protocolo_secao",
@@ -181,7 +175,6 @@ def exemplos_de_pacientes(banco: BancoHospital, indice: dict[str, Trecho]) -> li
         texto_contexto = contexto.como_texto()
         alertas = avaliar(contexto)
 
-        # 1) Resumo da situacao do paciente.
         partes = [
             f"Paciente do {contexto.identificacao_segura}, "
             f"{contexto.idade} anos, internado por {contexto.motivo_internacao.lower()}.",
@@ -217,7 +210,6 @@ def exemplos_de_pacientes(banco: BancoHospital, indice: dict[str, Trecho]) -> li
             "origem": f"paciente:{prontuario}:resumo",
         })
 
-        # 2) Exames pendentes.
         if contexto.exames_pendentes:
             itens = "; ".join(
                 f"{e['nome']}" + (" (marcado como critico)" if e.get("critico") else "")
@@ -239,7 +231,6 @@ def exemplos_de_pacientes(banco: BancoHospital, indice: dict[str, Trecho]) -> li
             "origem": f"paciente:{prontuario}:exames",
         })
 
-        # 3) Pendencias de protocolo e alertas.
         if alertas:
             corpo = ("Pendencias identificadas para o paciente do "
                      f"{contexto.identificacao_segura}: "
@@ -377,17 +368,46 @@ def exemplos_de_recusa(banco: BancoHospital, indice: dict[str, Trecho],
 
 
 def exemplos_de_documentos(trechos: list[Trecho], indice: dict[str, Trecho]) -> list[dict[str, Any]]:
-    """Perguntas sobre a estrutura formal dos documentos institucionais."""
+    """Perguntas sobre os modelos institucionais de laudo, receita e procedimento.
+
+    Os modelos sao identificados pelo prefixo ``MOD-`` do identificador, e nao
+    pelo campo ``tipo``: o frontmatter de cada arquivo declara o proprio tipo
+    (``laudo``, ``receita``, ``procedimento``, ``relatorio_alta``), que
+    sobrescreve o rotulo generico atribuido na carga. Filtrar por
+    ``tipo == "modelo_documento"`` nao casa com nenhum trecho.
+
+    Duas perguntas por documento, uma para cada secao que interessa ao
+    profissional: o que o documento exige, e o que um sistema de apoio pode
+    fazer com ele.
+    """
     exemplos = []
-    modelos = [t for t in trechos if t.tipo == "modelo_documento" and "estrutura" in t.titulo_secao.lower()]
-    for trecho in modelos:
+    for trecho in trechos:
+        if not trecho.documento.startswith("MOD-"):
+            continue
+
+        titulo_secao = trecho.titulo_secao.lower()
+        nome_documento = trecho.titulo_documento.lower()
+
+        if titulo_secao.startswith("estrutura obrigat"):
+            pergunta = f"Quais itens sao obrigatorios no {nome_documento}?"
+            complemento = (
+                " Posso redigir a minuta a partir dos dados estruturados, sempre marcada "
+                "como MINUTA — NAO VALIDADA; a liberacao depende do profissional responsavel."
+            )
+        elif titulo_secao.startswith("regra de uso"):
+            pergunta = f"O que um sistema de apoio pode fazer com o {nome_documento}?"
+            complemento = (
+                " Toda minuta gerada e marcada como MINUTA — NAO VALIDADA e nao dispensa a "
+                "conferencia e a assinatura do profissional responsavel."
+            )
+        else:
+            continue
+
         fonte = f"{trecho.referencia} — {trecho.titulo_secao}"
-        corpo = (_condensar(trecho.texto, 800)
-                 + " Posso redigir a minuta a partir dos dados estruturados, sempre marcada "
-                   "como MINUTA — NAO VALIDADA; a liberacao depende do profissional responsavel.")
+        corpo = _condensar(trecho.texto, 800) + complemento
         exemplos.append({
             "categoria": "documento",
-            "pergunta": f"Quais itens sao obrigatorios no {trecho.titulo_documento.lower()}?",
+            "pergunta": pergunta,
             "resposta": montar_resposta(
                 corpo, [fonte, _fonte_formatada("PROT-GOV-010 §4", indice)], ROTULO_VALIDACAO),
             "fontes": [fonte],
@@ -398,9 +418,15 @@ def exemplos_de_documentos(trechos: list[Trecho], indice: dict[str, Trecho]) -> 
     return exemplos
 
 
-# -------------------------------------------------------------------- pipeline
 def construir_corpus(semente: int = TREINO.semente) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Executa carga, anonimizacao e geracao, devolvendo o corpus bruto."""
+    """Executa carga, anonimizacao e geracao, devolvendo o corpus bruto.
+
+    A anonimizacao e aplicada duas vezes por caminhos diferentes: os geradores
+    tratam o texto que vira resposta, e a passagem final trata o contexto
+    recuperado. Os dois entram no treino — o contexto no turno do usuario — e as
+    secoes de exemplo dos modelos de documento trazem CPF, CNS e telefone
+    ficticios que precisam ser removidos antes de virar peso no modelo.
+    """
     aleatorio = random.Random(semente)
 
     prontuarios = carregar_prontuarios_brutos()
@@ -421,13 +447,17 @@ def construir_corpus(semente: int = TREINO.semente) -> tuple[list[dict[str, Any]
     corpus += exemplos_de_recusa(banco, indice, aleatorio)
     corpus += exemplos_de_documentos(trechos, indice)
 
-    # Contabiliza a anonimizacao aplicada aos textos livres dos prontuarios.
     contagem_pii: dict[str, int] = {}
     for prontuario in prontuarios:
         for evolucao in prontuario.get("evolucoes", []):
             resultado = anonimizador.anonimizar(evolucao.get("texto", ""))
             for tipo, quantidade in resultado.contagem_por_tipo.items():
                 contagem_pii[tipo] = contagem_pii.get(tipo, 0) + quantidade
+
+    for exemplo in corpus:
+        contexto = exemplo.get("contexto_documentos")
+        if contexto:
+            exemplo["contexto_documentos"] = anonimizador.anonimizar_texto(contexto)
 
     metadados = {
         "documentos": len({t.documento for t in trechos}),
@@ -476,7 +506,6 @@ def main() -> None:
     destino = args.destino
     destino.mkdir(parents=True, exist_ok=True)
 
-    # Nomes exigidos pelo mlx_lm.lora: train.jsonl, valid.jsonl e test.jsonl.
     mapa_arquivos = {"treino": "train.jsonl", "validacao": "valid.jsonl", "teste": "test.jsonl"}
     for particao, arquivo in mapa_arquivos.items():
         gravar_particao(particoes[particao], destino / arquivo)

@@ -13,12 +13,12 @@ import random
 import re
 import unicodedata
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any
 
 from ..finetuning.formato import segue_formato
 
-# Sinais de que a anonimizacao falhou e sobrou identificador direto no texto.
 PADROES_PII_RESIDUAL = [
     ("cpf", re.compile(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b")),
     ("cns", re.compile(r"\b\d{3}\s\d{4}\s\d{4}\s\d{4}\b")),
@@ -83,6 +83,23 @@ def detectar_pii_residual(texto: str) -> list[str]:
     return [tipo for tipo, padrao in PADROES_PII_RESIDUAL if padrao.search(texto or "")]
 
 
+def texto_treinado(exemplo: dict[str, Any]) -> str:
+    """Junta tudo que de fato chega ao modelo durante o treino.
+
+    A pergunta e a resposta nao sao o corpo inteiro do exemplo: os contextos
+    recuperados entram no turno do usuario em ``montar_mensagens``. Verificar
+    apenas pergunta e resposta deixaria o contexto fora da checagem de PII, que
+    e justamente onde o texto vem de documento institucional sem tratamento.
+    """
+    partes = [
+        exemplo.get("pergunta", ""),
+        exemplo.get("resposta", ""),
+        exemplo.get("contexto_documentos", ""),
+        exemplo.get("contexto_paciente", ""),
+    ]
+    return "\n".join(parte for parte in partes if parte)
+
+
 def _motivo_descarte(exemplo: dict[str, Any], exigir_formato: bool) -> str | None:
     pergunta = exemplo.get("pergunta", "")
     resposta = exemplo.get("resposta", "")
@@ -120,7 +137,7 @@ def curar(
             continue
 
         texto_completo = f"{exemplo.get('pergunta','')}\n{exemplo.get('resposta','')}"
-        tipos_pii = detectar_pii_residual(texto_completo)
+        tipos_pii = detectar_pii_residual(texto_treinado(exemplo))
         if tipos_pii:
             for tipo in tipos_pii:
                 relatorio.pii_residual[tipo] += 1
@@ -133,8 +150,6 @@ def curar(
             relatorio.descartados["duplicata_exata"] += 1
             continue
 
-        # Deduplicacao aproximada dentro da mesma categoria, para nao penalizar
-        # categorias que sao naturalmente repetitivas entre si.
         categoria = exemplo.get("categoria", "geral")
         shingles = _shingles(texto_completo)
         duplicada = False

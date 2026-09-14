@@ -71,12 +71,10 @@ def construir_grafo(dependencias: Dependencias | None = None, compilar: bool = T
         },
     )
 
-    # Ramo com paciente: prontuario -> exames -> regras -> recuperacao.
     grafo.add_edge("carregar_contexto_paciente", "verificar_exames_pendentes")
     grafo.add_edge("verificar_exames_pendentes", "avaliar_regras")
     grafo.add_edge("avaliar_regras", "recuperar_protocolos")
 
-    # Tronco comum.
     grafo.add_edge("recuperar_protocolos", "gerar_resposta")
     grafo.add_edge("gerar_resposta", "validar_saida")
     grafo.add_edge("validar_saida", "emitir_alertas")
@@ -84,7 +82,6 @@ def construir_grafo(dependencias: Dependencias | None = None, compilar: bool = T
     grafo.add_edge("explicar", "abrir_validacao")
     grafo.add_edge("abrir_validacao", "concluir")
 
-    # Ramo de recusa: nao passa pelo modelo, mas passa pela auditoria.
     grafo.add_edge("recusar", "concluir")
     grafo.add_edge("concluir", END)
 

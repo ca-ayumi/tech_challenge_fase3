@@ -1,5 +1,7 @@
 # Tech Challenge Fase 3 — Assistente Clínico Institucional
 
+[![CI](https://github.com/ca-ayumi/tech_challenge_fase3/actions/workflows/ci.yml/badge.svg)](https://github.com/ca-ayumi/tech_challenge_fase3/actions/workflows/ci.yml)
+
 Assistente virtual médico treinado com dados próprios do hospital: **fine-tuning de LLM por LoRA**, pipeline **LangChain** e fluxos de decisão em **LangGraph**, com limites de atuação, auditoria e explicabilidade.
 
 **FIAP — IA para DEVS**
@@ -161,12 +163,15 @@ tests/                     112 testes
 | Modelo base | `Qwen2.5-1.5B-Instruct` (4-bit) |
 | Técnica | LoRA — rank 16, escala 20, dropout 0,05, 8 camadas |
 | Parâmetros treináveis | 5,3M (**0,34%** de 1,5B) |
-| Dataset | 313 exemplos (255 treino / 29 validação / 29 teste) |
+| Dataset | 321 exemplos (261 treino / 30 validação / 30 teste) |
 | Hardware | Apple M3 Pro, 18 GB — pico de 4,8 GB |
-| Duração | ~17 min, 400 iterações |
-| Perda de validação | 2,034 → **0,457** |
+| Duração | ~16 min, 400 iterações |
+| Perda de validação | 1,864 → **0,463** (iteração 150) |
+| Checkpoint entregue | o de menor perda de validação, selecionado automaticamente |
 
 `mask_prompt` ativado: a perda conta apenas os tokens da resposta, não do prompt de sistema nem do contexto recuperado.
+
+**Seleção de checkpoint.** Com 261 exemplos de treino, o sobreajuste começa antes do fim: a perda de validação atinge o mínimo na iteração 150 (0,463) e sobe até 0,800 na 400, enquanto a de treino continua caindo até 0,183. Por isso `save_every` está alinhado com `steps_per_eval` (50) — todo ponto avaliado tem checkpoint — e `promover_melhor_checkpoint()` entrega o de menor perda de validação, não o da última iteração. A escolha fica registrada em `modelos/adaptador-lora/metadados_treino.json`.
 
 **Por que LoRA e não ajuste completo:** o adaptador tem 21 MB, pode ser versionado junto do código e permite reverter o ajuste sem trocar o modelo base — o que importa num contexto hospitalar onde o modelo base é auditado separadamente.
 
@@ -301,16 +306,20 @@ Esse é o caso clássico de um modelo inventar um número de protocolo plausíve
 
 ### Fine-tuning — modelo ajustado contra modelo base
 
-29 exemplos de teste, mesmo prompt, mesmo contexto recuperado. A única diferença é o adaptador LoRA.
+30 exemplos de teste, mesmo prompt, mesmo contexto recuperado. A única diferença é o adaptador LoRA.
 
 | Métrica | Base | Ajustado | |
 |---|---|---|---|
-| Aderência ao formato de três blocos | 72,4% | **86,2%** | +13,8 p.p. |
-| Respostas com fonte citada | 72,4% | **86,2%** | +13,8 p.p. |
-| Citação coincide com a de ouro | 13,8% | **48,3%** | **3,5×** |
-| Citações inexistentes | 13 | **5** | **−62%** |
-| ROUGE-L médio | 0,184 | **0,611** | **3,3×** |
-| Tokens gerados (média) | 313 | 232 | −26% |
+| Aderência ao formato de três blocos | 76,7% | **90,0%** | +13,3 p.p. |
+| Respostas com fonte citada | 76,7% | **93,3%** | +16,6 p.p. |
+| Citação coincide com a de ouro | 20,0% | **66,7%** | **3,3×** |
+| Citações inexistentes | 12 | **6** | **−50%** |
+| ROUGE-L médio | 0,227 | **0,641** | **2,8×** |
+| Tokens gerados (média) | 284 | 224 | −21% |
+
+Por categoria, o ganho se concentra onde o formato institucional é mais rígido — recusa de prescrição vai de 50% para 100% de aderência, com ROUGE-L de 0,088 para 0,864. Com 30 exemplos de teste, as quebras por categoria são indicativas, não conclusivas.
+
+A inferência roda a temperatura 0,2, como em produção, então cada execução varia alguns pontos. O que se mantém entre execuções é a direção e a ordem de grandeza: o ROUGE-L quase triplica, a precisão de citação mais que triplica e as citações inexistentes caem pela metade.
 
 ### Segurança — 40 casos de red team
 
@@ -324,7 +333,7 @@ As duas primeiras linhas precisam ser lidas juntas: um sistema que recusa tudo a
 
 ### Recuperação
 
-80,8% de acerto em 4 resultados, com posição média 1,29 — a seção correta, quando recuperada, quase sempre vem em primeiro lugar.
+77,8% de acerto em 4 resultados, com posição média 1,43 — a seção correta, quando recuperada, quase sempre vem em primeiro lugar. O número caiu ante a execução anterior (80,8% / 1,29) porque o conjunto de teste passou a incluir perguntas sobre os modelos de documento (`MOD-*`), cujo vocabulário se sobrepõe menos ao dos protocolos.
 
 Análise completa em [`docs/RELATORIO_TECNICO.md`](./docs/RELATORIO_TECNICO.md); números brutos da última execução em [`avaliacao/resultados/avaliacao.md`](./avaliacao/resultados/avaliacao.md).
 
@@ -344,11 +353,33 @@ Análise completa em [`docs/RELATORIO_TECNICO.md`](./docs/RELATORIO_TECNICO.md);
 ## Testes
 
 ```bash
-make testar             # 112 testes
+make testar             # 202 testes
+make cobertura          # relatório de cobertura (81%)
 make lint               # ruff
 ```
 
 Os testes de integração usam o backend `eco`: o fluxo inteiro — triagem, contexto, regras, recuperação, guardrails, explicabilidade, validação e auditoria — é exercitado sem depender de um modelo baixado.
+
+| Arquivo | Cobre |
+|---|---|
+| `test_anonimizacao.py` | remoção, pseudonimização estável e a fronteira entre nome próprio e texto clínico |
+| `test_dados.py` | preprocessamento, curadoria, contexto minimizado e as barreiras do SQL somente-leitura |
+| `test_formato_e_recuperacao.py` | formato canônico, BM25 com seus reforços e detecção de citação não fundamentada |
+| `test_seguranca.py` | as 12 políticas uma a uma, os guardrails e as 14 regras clínicas |
+| `test_fluxo.py` | integração pelo grafo: as três rotas, a trilha de auditoria e o mascaramento de PII |
+| `test_ferramentas.py` | as 8 tools do LangChain, incluindo as recusas de escrita e de governança |
+| `test_construir_dataset.py` | os cinco geradores e a anonimização de tudo que chega ao treino |
+| `test_finetuning.py` | configuração do LoRA, parser de métricas, seleção de checkpoint e ROUGE-L |
+| `test_cadeias_e_cli.py` | as cadeias LCEL e os 8 subcomandos da linha de comando |
+
+### Integração contínua
+
+[`.github/workflows/ci.yml`](./.github/workflows/ci.yml) roda a cada push e pull request:
+
+- **Lint e testes** em Python 3.11 e 3.12, com relatório de cobertura e piso de 75%;
+- **Pipeline de dados** — reconstrói o dataset a partir dos dados brutos e falha se qualquer identificador direto sobreviver à anonimização nas três partições.
+
+O segundo job existe porque a verificação de PII do dataset não é algo que se confere no olho: é a barreira que impede um CPF de virar peso no modelo.
 
 ---
 

@@ -44,7 +44,6 @@ def _p(*expressoes: str) -> tuple[Pattern[str], ...]:
     return tuple(re.compile(expressao, re.IGNORECASE) for expressao in expressoes)
 
 
-# --------------------------------------------------------------- entrada
 POLITICAS_ENTRADA: tuple[Politica, ...] = (
     Politica(
         codigo="ENT-01-prescricao",
@@ -161,9 +160,6 @@ POLITICAS_ENTRADA: tuple[Politica, ...] = (
     ),
 )
 
-# ----------------------------------------------------------------- saida
-# Unidades de dose de medicamento. A negativa evita casar com unidades de exame
-# laboratorial (mg/dL, mEq/L, mmol/L), que sao citacao legitima de protocolo.
 _UNIDADES_DOSE = r"(?:mg|mcg|µg|ug|ui|u\.i\.)"
 
 POLITICAS_SAIDA: tuple[Politica, ...] = (

@@ -59,7 +59,6 @@ def treinar(configuracao: dict[str, Any]) -> dict[str, Any]:
         lora_dropout=float(parametros_lora.get("dropout", 0.05)),
         bias="none",
         task_type="CAUSAL_LM",
-        # Mesmas projecoes que o MLX ajusta por padrao.
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
     )
 
@@ -78,7 +77,6 @@ def treinar(configuracao: dict[str, Any]) -> dict[str, Any]:
         gradient_checkpointing=bool(configuracao.get("grad_checkpoint", True)),
         seed=int(configuracao.get("seed", 42)),
         report_to=[],
-        # Equivalente ao mask_prompt do MLX: a perda so conta os tokens da resposta.
         completion_only_loss=True,
     )
 

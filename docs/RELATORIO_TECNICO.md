@@ -86,7 +86,7 @@ Metade dos exemplos de protocolo traz a seção no contexto do prompt (exercitan
 
 A curadoria aplica, nesta ordem, filtros de qualidade (tamanho mínimo, aderência ao formato, presença de fonte), verificação de **PII residual** — um exemplo que ainda contenha CPF ou telefone é descartado, não corrigido — e deduplicação exata (hash) e aproximada (Jaccard sobre 5-gramas, limiar 0,92) dentro de cada categoria. A divisão em treino, validação e teste é estratificada por categoria e determinística com semente 42.
 
-**Resultado:** 317 exemplos gerados, 4 descartados por duplicata aproximada, **313 curados** — 255 treino, 29 validação, 29 teste.
+**Resultado:** 325 exemplos gerados, 4 descartados por duplicata aproximada, **321 curados** — 261 treino, 30 validação, 30 teste.
 
 O relatório completo da curadoria, com todas as contagens e motivos de descarte, é gravado em `dados/processados/relatorio_dataset.json`.
 
@@ -117,25 +117,39 @@ O preço dessa escolha é a fluência. O modelo ocasionalmente produz uma frase 
 | `mask_prompt` | ativado | A perda conta só os tokens da resposta |
 | Semente | 42 | |
 
-**Sobre o comprimento de sequência.** A primeira execução usou 1024 tokens e o log avisou que algumas sequências seriam truncadas. Medindo a distribuição real do dataset — mediana 527, p95 865, máximo 1161 tokens — ficou claro que 5 dos 255 exemplos seriam cortados, e o corte cairia justamente no fim da resposta, onde fica o bloco *Validação*. Treinar assim ensinaria o modelo a omitir o rótulo de validação ocasionalmente. O treino foi reiniciado com 1280 tokens, que cobre o máximo observado sem desperdiçar memória.
+**Sobre o comprimento de sequência.** A primeira execução usou 1024 tokens e o log avisou que algumas sequências seriam truncadas. Medindo a distribuição real do dataset — mediana 527, p95 865, máximo 1161 tokens — ficou claro que alguns exemplos de treino seriam cortados, e o corte cairia justamente no fim da resposta, onde fica o bloco *Validação*. Treinar assim ensinaria o modelo a omitir o rótulo de validação ocasionalmente. O treino foi reiniciado com 1280 tokens, que cobre o máximo observado sem desperdiçar memória.
 
 **Sobre `mask_prompt`.** Sem isso, o modelo gastaria capacidade aprendendo a reproduzir o prompt de sistema e o contexto recuperado, que são entrada e não saída. Com a máscara, os 5,3M de parâmetros se concentram no comportamento que importa.
 
 ### 3.3 Execução
 
-Apple M3 Pro, 18 GB. 400 iterações em **~17 minutos**, 153 tokens/s, pico de **4,758 GB**.
+Apple M3 Pro, 18 GB. 400 iterações em **~16 minutos**, 156 tokens/s, pico de **4,758 GB**.
 
-| Iteração | Perda de treino | Perda de validação |
-|---|---|---|
-| 1 | — | **2,034** |
-| 50 | 1,24 | 1,08 |
-| 100 | 0,55 | 0,79 |
-| 200 | 0,39 | 0,611 |
-| 300 | 0,34 | 0,571 |
-| 350 | — | **0,457** ← melhor |
-| 400 | 0,168 | 0,626 |
+| Iteração | Perda de validação |
+|---|---|
+| 1 | **1,864** |
+| 50 | 0,597 |
+| 100 | 0,547 |
+| 150 | **0,463** ← melhor, entregue |
+| 200 | 0,676 |
+| 250 | 0,669 |
+| 300 | 0,671 |
+| 350 | 0,487 |
+| 400 | 0,800 |
 
-A perda de validação cai de 2,034 para 0,457 e **volta a subir** na última janela, enquanto a de treino continua caindo até 0,168 — o padrão clássico do início de sobreajuste. Com 255 exemplos de treino, isso é esperado. O checkpoint entregue é o da iteração 400; um trabalho de produção usaria o de 350, e a forma correta de fazer isso seria reduzir o intervalo de salvamento (`save_every`) para coincidir com o de avaliação. Fica registrado como limitação consciente, não como descuido.
+A perda de validação cai de 1,864 para 0,463 na iteração 150 e **volta a subir** depois, enquanto a de treino continua caindo até 0,183 — o padrão clássico de sobreajuste. Com 261 exemplos de treino, isso é esperado.
+
+**A entrega não é a última iteração.** `save_every` está alinhado com `steps_per_eval` (ambos 50), de modo que todo ponto com perda de validação medida tem um checkpoint correspondente. Ao fim do treino, `promover_melhor_checkpoint()` lê a curva, localiza o mínimo e promove aquele arquivo a `adapters.safetensors`, registrando a escolha em `metadados_treino.json`:
+
+```json
+"selecao_checkpoint": {
+  "checkpoint_entregue": 150,
+  "perda_validacao_entregue": 0.463,
+  "selecao": "menor perda de validacao"
+}
+```
+
+O efeito é direto: o adaptador entregue tem perda de validação **0,463** em vez dos **0,800** da iteração 400 — sem um minuto a mais de treino. A seleção é automática, não um ajuste manual desta execução.
 
 **Um erro no próprio pipeline.** A execução terminou com código de saída 1 depois de salvar o adaptador. A causa não foi o treinamento, e sim o parser de métricas do log: `Peak mem 4.758 GB` era lido com `split()[-1]`, que devolve `"GB"`, e `float("GB")` levantava exceção. Um segundo defeito no mesmo parser fazia com que a perda de validação nunca fosse extraída — a cadeia de `elif` casava primeiro com `Iter` e nunca chegava a `Val loss`. Os dois foram corrigidos com um parser baseado em expressões regulares nomeadas, e as métricas foram reextraídas do log já existente, sem retreinar.
 
@@ -236,7 +250,7 @@ Os limites de atuação estão em `seguranca/politicas.py` como objetos, não es
 
 Uma violação crítica na saída substitui a resposta inteira; as demais anexam aviso.
 
-**Um detalhe que exigiu cuidado.** O detector de dose não pode confundir posologia de medicamento com unidade de exame laboratorial — "ureia de 62 mg/dL" e "lactato de 4,8 mmol/L" são citação legítima de protocolo. O padrão usa uma negativa que exclui `mg/dL`, `mEq/L` e `mmol/L`. Validado contra os 255 exemplos do conjunto de treino: **zero falsos positivos**. Há teste fixando o caso (`test_unidade_laboratorial_nao_e_confundida_com_dose`).
+**Um detalhe que exigiu cuidado.** O detector de dose não pode confundir posologia de medicamento com unidade de exame laboratorial — "ureia de 62 mg/dL" e "lactato de 4,8 mmol/L" são citação legítima de protocolo. O padrão usa uma negativa que exclui `mg/dL`, `mEq/L` e `mmol/L`. Validado contra os 261 exemplos do conjunto de treino: **zero falsos positivos**. Há teste fixando o caso (`test_unidade_laboratorial_nao_e_confundida_com_dose`).
 
 **Outro ajuste, na direção oposta.** A primeira versão do guardrail de saída mascarava também o número de prontuário, por aplicar a mesma política do log. O efeito era absurdo: o médico perguntava sobre seu paciente e recebia `prontuario [PRONTUARIO_9389]`. Mascaramento total é regra de **log**, não de **entrega** — o profissional já tem acesso legítimo àquele paciente, e o número de prontuário é o identificador de trabalho. O guardrail de saída passou a manter o prontuário e mascarar o resto; a trilha de auditoria continua mascarando tudo.
 
@@ -289,24 +303,37 @@ A avaliação tem três blocos, cada um respondendo a uma pergunta diferente. Os
 
 ### 6.1 Qualidade da geração — ajustado contra base
 
-29 exemplos do conjunto de teste, mesma temperatura, mesmo prompt de sistema, mesmo contexto recuperado. A única diferença é o adaptador LoRA.
+30 exemplos do conjunto de teste, mesma temperatura, mesmo prompt de sistema, mesmo contexto recuperado. A única diferença é o adaptador LoRA.
 
 | Métrica | Base | Ajustado | |
 |---|---|---|---|
-| Aderência ao formato de três blocos | 72,4% | **86,2%** | +13,8 p.p. |
-| Respostas com fonte citada | 72,4% | **86,2%** | +13,8 p.p. |
-| Citação coincide com a de ouro | 13,8% | **48,3%** | **3,5×** |
-| Citações inexistentes (total) | 13 | **5** | **−62%** |
-| ROUGE-L médio | 0,184 | **0,611** | **3,3×** |
+| Aderência ao formato de três blocos | 76,7% | **90,0%** | +13,3 p.p. |
+| Respostas com fonte citada | 76,7% | **93,3%** | +16,6 p.p. |
+| Citação coincide com a de ouro | 20,0% | **66,7%** | **3,3×** |
+| Citações inexistentes (total) | 12 | **6** | **−50%** |
+| ROUGE-L médio | 0,227 | **0,641** | **2,8×** |
 | Violação de dose na saída | 0,0% | 0,0% | — |
-| Tokens gerados (média) | 313 | 232 | −26% |
-| Latência (média) | 3,2 s | 3,1 s | — |
+| Tokens gerados (média) | 284 | 224 | −21% |
+| Latência (média) | 2,8 s | 2,9 s | — |
 
-**Sobre a variância entre execuções.** A inferência roda com temperatura 0,2, e não em modo determinístico, porque é assim que o assistente opera na interface. Os valores acima são de uma execução; uma segunda execução do mesmo conjunto deu 20,7% de citação correta e 9 citações inexistentes para o modelo base, mantendo o ajustado estável em 48,3% e 5. A direção e a ordem de grandeza da diferença se mantêm, mas cada número isolado tem uma margem de alguns pontos. Para uma comparação exata e reproduzível, bastaria fixar `TEMPERATURA=0` no `.env` antes de avaliar — ao custo de medir um regime diferente daquele em que o sistema é usado.
+**Por categoria** (base → ajustado, aderência ao formato e ROUGE-L):
 
-**Leitura dos resultados.** O ganho maior está onde se esperava: o ROUGE-L triplica porque o modelo ajustado aprendeu o vocabulário e a estrutura dos protocolos internos — ele responde como a instituição responde, não como um assistente genérico. A aderência ao formato sobe 13,8 pontos e a precisão de citação mais que triplica.
+| Categoria | n | Formato | ROUGE-L |
+|---|---:|---|---|
+| `recusa_prescricao` | 4 | 50% → **100%** | 0,088 → **0,864** |
+| `protocolo_secao` | 18 | 78% → **94%** | 0,274 → **0,665** |
+| `documento` | 1 | 100% → 100% | 0,230 → **0,847** |
+| `alerta` | 2 | 100% → 100% | 0,090 → **0,433** |
+| `contexto_paciente` | 2 | 100% → **50%** | 0,152 → **0,520** |
+| `duvida_protocolo` | 3 | 67% → 67% | 0,275 → **0,345** |
 
-O ponto mais relevante para o contexto hospitalar é a queda nas **citações inexistentes** — referências a protocolos que não existem no corpus. O modelo base produziu 13; o ajustado, 5. O fine-tuning reduziu bastante, mas não eliminou. É exatamente por isso que a verificação de citação existe como camada separada: o modelo melhorou, mas continua não sendo a garantia.
+O ganho se concentra onde o formato institucional é mais rígido: a recusa de prescrição sai de 2 acertos em 4 para 4 em 4, com ROUGE-L quase dez vezes maior. A regressão aparente em `contexto_paciente` é de 1 exemplo em 2 — com n = 2, isso é ruído, não tendência; as quebras por categoria neste conjunto são indicativas, não conclusivas.
+
+**Sobre a variância entre execuções.** A inferência roda com temperatura 0,2, e não em modo determinístico, porque é assim que o assistente opera na interface. Os valores acima são de uma execução; execuções anteriores variaram alguns pontos percentuais na citação correta do modelo base, mantendo o ajustado estável. A direção e a ordem de grandeza da diferença se mantêm, mas cada número isolado tem uma margem de alguns pontos. Para uma comparação exata e reproduzível, bastaria fixar `TEMPERATURA=0` no `.env` antes de avaliar — ao custo de medir um regime diferente daquele em que o sistema é usado.
+
+**Leitura dos resultados.** O ganho maior está onde se esperava: o ROUGE-L quase triplica porque o modelo ajustado aprendeu o vocabulário e a estrutura dos protocolos internos — ele responde como a instituição responde, não como um assistente genérico. A aderência ao formato sobe 13 pontos e a precisão de citação mais que triplica.
+
+O ponto mais relevante para o contexto hospitalar é a queda nas **citações inexistentes** — referências a protocolos que não existem no corpus. O modelo base produziu 12; o ajustado, 6. O fine-tuning reduziu bastante, mas não eliminou. É exatamente por isso que a verificação de citação existe como camada separada: o modelo melhorou, mas continua não sendo a garantia.
 
 A redução de 26% nos tokens gerados é efeito colateral útil: o modelo ajustado vai direto ao ponto em vez de preencher com texto genérico.
 
@@ -339,11 +366,13 @@ O achado que vale registrar não é o número final, e sim que **um conjunto de 
 
 | Métrica | Valor |
 |---|---|
-| Consultas avaliadas | 26 |
-| Acerto em 4 | **80,8%** |
-| Posição média do acerto | **1,29** |
+| Consultas avaliadas | 27 |
+| Acerto em 4 | **77,8%** |
+| Posição média do acerto | **1,43** |
 
-A seção correta, quando recuperada, aparece quase sempre em primeiro lugar. Os ~19% de falha concentram-se em perguntas cuja resposta legítima está espalhada por várias seções, em que a de ouro não é a única defensável.
+A seção correta, quando recuperada, aparece quase sempre em primeiro lugar. Os ~22% de falha concentram-se em perguntas cuja resposta legítima está espalhada por várias seções, em que a de ouro não é a única defensável.
+
+O número caiu ante a execução anterior (80,8%, posição 1,29) porque o conjunto de teste passou a incluir perguntas sobre os modelos de documento (`MOD-*`). O vocabulário desses arquivos — estrutura formal de laudo e receituário — se sobrepõe menos ao dos protocolos clínicos, e o BM25 tem menos sinal lexical para trabalhar. É uma queda esperada ao ampliar a cobertura do conjunto, não uma regressão da recuperação.
 
 ---
 
@@ -353,9 +382,9 @@ Registradas com honestidade, porque são o que separa uma demonstração de um s
 
 1. **Fluência do modelo de 1,5B.** Frases ocasionalmente mal construídas. Um modelo de 7B–8B resolveria, ao custo de memória e de tempo de treino. A decisão foi priorizar rodar localmente.
 
-2. **Sobreajuste no fim do treino.** A perda de validação melhor foi na iteração 350 (0,457) e o checkpoint entregue é o da 400 (0,626). O intervalo de salvamento não coincidia com o de avaliação. Correção: alinhar `save_every` a `steps_per_eval`.
+2. **Sobreajuste a partir da iteração 150.** Com 261 exemplos, a perda de validação atinge o mínimo cedo e sobe depois. Não afeta o que é entregue — `save_every` está alinhado a `steps_per_eval` e o checkpoint de menor perda é promovido automaticamente —, mas significa que 250 das 400 iterações são desperdício de tempo de treino. Um trabalho de produção usaria parada antecipada, encerrando o treino quando a validação não melhora por N avaliações consecutivas.
 
-3. **Citações inexistentes não zeradas.** Restam 5 em 29 exemplos (contra 13 do modelo base). Mitigado pela verificação de citação, que as sinaliza, mas não eliminado na geração.
+3. **Citações inexistentes não zeradas.** Restam 6 em 30 exemplos (contra 12 do modelo base). Mitigado pela verificação de citação, que as sinaliza, mas não eliminado na geração.
 
 4. **Corpus sintético.** 10 protocolos e 12 pacientes exercitam bem a arquitetura, mas um hospital real tem centenas de protocolos e milhares de pacientes. Em escala, BM25 puro provavelmente precisaria de uma etapa de reordenação.
 
