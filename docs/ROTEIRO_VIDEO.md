@@ -43,18 +43,18 @@ Explicar as duas estratégias: remover (CPF vira `[CPF]`) e pseudonimizar (nome 
 .venv/bin/python -m assistente_medico.dados.construir_dataset
 ```
 
-Mostrar a saída: 317 gerados → 313 curados → 255/29/29. Abrir `relatorio_dataset.json`.
+Mostrar a saída: 325 gerados → 321 curados → 261/30/30. Abrir `relatorio_dataset.json`.
 
 **Treino (1 min 20 s).** Não treinar ao vivo (17 min). Mostrar `logs/treino_lora.log` e a curva:
 
 | Iteração | Val loss |
 |---|---|
-| 1 | 2,034 |
-| 200 | 0,611 |
-| 350 | **0,457** |
-| 400 | 0,626 |
+| 1 | 1,864 |
+| 100 | 0,547 |
+| 150 | **0,463** ← entregue |
+| 400 | 0,800 |
 
-Dizer honestamente: a perda de validação melhor foi na 350 e o checkpoint entregue é o da 400 — início de sobreajuste com 255 exemplos, está registrado como limitação no relatório. Destacar 5,3M de parâmetros treináveis (0,34%) e adaptador de 21 MB.
+O ponto a fazer aqui: a perda de validação atinge o mínimo na iteração 150 e piora depois — sobreajuste com 261 exemplos. **O checkpoint entregue não é o último, é o melhor**: `save_every` está alinhado com `steps_per_eval`, e `promover_melhor_checkpoint()` seleciona o de menor perda automaticamente. Mostrar o campo `selecao_checkpoint` em `metadados_treino.json`. Destacar 5,3M de parâmetros treináveis (0,34%) e adaptador de 21 MB.
 
 ---
 
