@@ -34,7 +34,7 @@ def mensagens_para_dicionarios(mensagens: Sequence[BaseMessage]) -> list[dict[st
     for mensagem in mensagens:
         papel = PAPEL_POR_TIPO.get(mensagem.type, "user")
         conteudo = mensagem.content
-        if isinstance(conteudo, list):  # conteudo multimodal nao se aplica aqui
+        if isinstance(conteudo, list):
             conteudo = " ".join(str(parte) for parte in conteudo)
         convertidas.append({"role": papel, "content": str(conteudo)})
     return convertidas
@@ -58,7 +58,6 @@ class ChatAssistenteMedico(BaseChatModel):
             self.modelo = carregar_modelo(
                 backend=self.backend, usar_adaptador=self.usar_adaptador
             )
-        # O backend efetivo pode diferir do pedido (ex.: queda para 'eco').
         self.backend = getattr(self.modelo, "backend", self.backend)
 
     @property

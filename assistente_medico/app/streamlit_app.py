@@ -19,7 +19,7 @@ from pathlib import Path
 
 import streamlit as st
 
-if __package__ in (None, ""):  # execucao direta pelo streamlit
+if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from assistente_medico.auditoria import Auditoria, configurar_logging
@@ -32,6 +32,15 @@ from assistente_medico.seguranca.regras_clinicas import avaliar
 
 CORES_PRIORIDADE = {
     "maxima": "🔴", "alta": "🟠", "media": "🟡", "informativa": "🔵",
+}
+
+NOME_PRIORIDADE = {
+    "maxima": "máxima", "alta": "alta", "media": "média", "informativa": "informativa",
+}
+
+NOME_PERFIL = {
+    "medico": "médico", "enfermeiro": "enfermeiro", "farmaceutico": "farmacêutico",
+    "residente": "residente", "paciente": "paciente",
 }
 
 st.set_page_config(page_title=NOME_ASSISTENTE, page_icon="🏥", layout="wide")
@@ -87,12 +96,12 @@ def aba_assistente(assistente, banco) -> None:
                 st.metric("Exames pendentes", len(contexto.exames_pendentes))
                 alertas = avaliar(contexto)
                 if alertas:
-                    st.markdown("**Pendencias detectadas**")
+                    st.markdown("**Pendências detectadas**")
                     for alerta in alertas:
                         icone = CORES_PRIORIDADE.get(alerta.prioridade, "⚪")
                         st.markdown(f"{icone} {alerta.mensagem}  \n`{alerta.fonte}`")
                 else:
-                    st.success("Sem pendencias pelas regras vigentes.")
+                    st.success("Sem pendências pelas regras vigentes.")
                 with st.expander("Dados enviados ao modelo"):
                     st.code(contexto.como_texto(), language="text")
 
@@ -106,7 +115,7 @@ def aba_assistente(assistente, banco) -> None:
                 if mensagem.get("rodape"):
                     st.caption(mensagem["rodape"])
 
-        pergunta = st.chat_input("Pergunta clinica ou sobre protocolo institucional")
+        pergunta = st.chat_input("Pergunta clínica ou sobre protocolo institucional")
         if pergunta:
             st.session_state.setdefault("historico", []).append(
                 {"papel": "user", "texto": pergunta}
@@ -115,7 +124,7 @@ def aba_assistente(assistente, banco) -> None:
                 st.markdown(pergunta)
 
             with st.chat_message("assistant"):
-                with st.spinner("Consultando protocolos e prontuario..."):
+                with st.spinner("Consultando protocolos e prontuário..."):
                     estado = assistente.responder(
                         pergunta,
                         perfil=st.session_state.get("perfil", "medico"),
@@ -125,14 +134,14 @@ def aba_assistente(assistente, banco) -> None:
                 st.markdown(estado["resposta"])
                 bloco_explicacao(estado.get("explicacao", {}))
 
-                partes = [f"interacao `{estado['interacao']}`",
+                partes = [f"interação `{estado['interacao']}`",
                           f"categoria `{estado['categoria']}`",
                           f"etapas: {len(estado.get('etapas', []))}"]
                 if estado.get("violacoes"):
-                    partes.append("politicas: "
+                    partes.append("políticas: "
                                   + ", ".join(v["codigo"] for v in estado["violacoes"]))
                 if estado.get("validacao_id"):
-                    partes.append(f"validacao pendente #{estado['validacao_id']}")
+                    partes.append(f"validação pendente #{estado['validacao_id']}")
                 rodape = " · ".join(partes)
                 st.caption(rodape)
 
@@ -159,21 +168,23 @@ def aba_painel(banco) -> None:
             "Paciente": paciente["nome"],
             "Motivo": paciente["motivo_internacao"][:44],
             "Exames pendentes": len(contexto.exames_pendentes) if contexto else 0,
-            "Pendencias": len(alertas),
-            "Maior prioridade": f"{CORES_PRIORIDADE.get(maior, '')} {maior}",
+            "Pendências": len(alertas),
+            "Maior prioridade": f"{CORES_PRIORIDADE.get(maior, '')} "
+                                f"{NOME_PRIORIDADE.get(maior, maior)}",
         })
     st.dataframe(linhas, use_container_width=True, hide_index=True)
 
     st.subheader("Alertas abertos no painel institucional")
     alertas_registrados = banco.listar_alertas(limite=50)
     if not alertas_registrados:
-        st.info("Nenhum alerta registrado ainda. Faca uma pergunta sobre um paciente "
+        st.info("Nenhum alerta registrado ainda. Faça uma pergunta sobre um paciente "
                 "na aba Assistente para que as regras sejam aplicadas.")
     else:
         st.dataframe([
             {
-                "Prioridade": f"{CORES_PRIORIDADE.get(a['prioridade'], '')} {a['prioridade']}",
-                "Prontuario": a["prontuario"],
+                "Prioridade": f"{CORES_PRIORIDADE.get(a['prioridade'], '')} "
+                              f"{NOME_PRIORIDADE.get(a['prioridade'], a['prioridade'])}",
+                "Prontuário": a["prontuario"],
                 "Mensagem": a["mensagem"],
                 "Fonte": a["fonte"],
                 "Criado em": a["criado_em"],
@@ -183,40 +194,40 @@ def aba_painel(banco) -> None:
 
 
 def aba_validacoes(banco) -> None:
-    st.subheader("Validacao humana obrigatoria")
-    st.caption("Toda sugestao gerada pelo assistente entra como pendente e so tem efeito "
-               "apos decisao registrada de profissional habilitado (PROT-GOV-010 §5).")
+    st.subheader("Validação humana obrigatória")
+    st.caption("Toda sugestão gerada pelo assistente entra como pendente e só tem efeito "
+               "após decisão registrada de profissional habilitado (PROT-GOV-010 §5).")
 
     status = st.radio("Status", ["pendente", "aceita", "recusada", "modificada"],
                       horizontal=True)
     validacoes = banco.listar_validacoes(status=status, limite=30)
     if not validacoes:
-        st.info(f"Nenhuma validacao com status '{status}'.")
+        st.info(f"Nenhuma validação com status '{status}'.")
         return
 
     for validacao in validacoes:
         with st.expander(
-            f"#{validacao['id']} · prontuario {validacao['prontuario'] or '-'} · "
+            f"#{validacao['id']} · prontuário {validacao['prontuario'] or '-'} · "
             f"{validacao['criado_em']}"
         ):
             st.markdown(validacao["sugestao"])
-            st.caption(f"interacao `{validacao['interacao']}` · fontes: {validacao['fontes']}")
+            st.caption(f"interação `{validacao['interacao']}` · fontes: {validacao['fontes']}")
             if status == "pendente":
                 profissional = st.text_input(
-                    "Profissional responsavel", key=f"prof_{validacao['id']}",
+                    "Profissional responsável", key=f"prof_{validacao['id']}",
                     placeholder="Dra. Fulana de Tal (CRM-SP 00.000)",
                 )
                 justificativa = st.text_area(
-                    "Justificativa (obrigatoria em recusa ou modificacao)",
+                    "Justificativa (obrigatória em recusa ou modificação)",
                     key=f"just_{validacao['id']}",
                 )
                 colunas = st.columns(3)
                 for coluna, decisao in zip(colunas, ["aceita", "modificada", "recusada"], strict=True):
                     if coluna.button(decisao.capitalize(), key=f"{decisao}_{validacao['id']}"):
                         if not profissional.strip():
-                            st.error("Informe o profissional responsavel.")
+                            st.error("Informe o profissional responsável.")
                         elif decisao != "aceita" and not justificativa.strip():
-                            st.error("Justificativa obrigatoria para recusa ou modificacao.")
+                            st.error("Justificativa obrigatória para recusa ou modificação.")
                         else:
                             banco.decidir_validacao(
                                 validacao["id"], decisao, profissional, justificativa or None
@@ -227,7 +238,7 @@ def aba_validacoes(banco) -> None:
                                  "justificativa": justificativa},
                                 usuario=profissional,
                             )
-                            st.success(f"Validacao {validacao['id']} registrada como {decisao}.")
+                            st.success(f"Validação {validacao['id']} registrada como {decisao}.")
                             st.rerun()
 
 
@@ -236,11 +247,11 @@ def aba_auditoria(banco) -> None:
     auditoria = Auditoria(banco=banco)
     interacoes = auditoria.ultimas_interacoes(limite=25)
     if not interacoes:
-        st.info("Nenhuma interacao registrada ainda.")
+        st.info("Nenhuma interação registrada ainda.")
         return
 
     escolhida = st.selectbox(
-        "Interacao",
+        "Interação",
         [i["interacao"] for i in interacoes],
         format_func=lambda x: next(
             f"{i['registrado_em']} · {x} · {i['eventos']} eventos"
@@ -256,9 +267,9 @@ def aba_auditoria(banco) -> None:
 
 
 def aba_politicas() -> None:
-    st.subheader("Limites de atuacao vigentes")
-    st.caption("Politicas derivadas do PROT-GOV-010. Entrada: avaliadas antes de chamar o "
-               "modelo. Saida: avaliadas sobre o texto gerado, antes da entrega.")
+    st.subheader("Limites de atuação vigentes")
+    st.caption("Políticas derivadas do PROT-GOV-010. Entrada: avaliadas antes de chamar o "
+               "modelo. Saída: avaliadas sobre o texto gerado, antes da entrega.")
     st.dataframe(resumo_politicas(), use_container_width=True, hide_index=True)
 
 
@@ -267,28 +278,29 @@ def main() -> None:
 
     with st.sidebar:
         st.title("🏥 " + NOME_ASSISTENTE)
-        st.caption(f"versao {VERSAO_ASSISTENTE}")
+        st.caption(f"versão {VERSAO_ASSISTENTE}")
         st.session_state["perfil"] = st.selectbox(
-            "Perfil", ["medico", "enfermeiro", "farmaceutico", "residente", "paciente"]
+            "Perfil", ["medico", "enfermeiro", "farmaceutico", "residente", "paciente"],
+            format_func=lambda perfil: NOME_PERFIL.get(perfil, perfil),
         )
-        st.session_state["usuario"] = st.text_input("Identificacao", value="dra.helena")
+        st.session_state["usuario"] = st.text_input("Identificação", value="dra.helena")
         backend = st.selectbox(
             "Backend do modelo", ["mlx", "eco", "transformers"],
             index=["mlx", "eco", "transformers"].index(MODELO.backend)
             if MODELO.backend in ("mlx", "eco", "transformers") else 0,
-            help="'mlx' usa a LLM ajustada por LoRA. 'eco' e o backend deterministico, "
-                 "sem rede neural, util para demonstrar o fluxo sem carregar o modelo.",
+            help="'mlx' usa a LLM ajustada por LoRA. 'eco' é o backend determinístico, "
+                 "sem rede neural, útil para demonstrar o fluxo sem carregar o modelo.",
         )
         if st.button("Limpar conversa"):
             st.session_state["historico"] = []
             st.rerun()
         st.divider()
-        st.caption("Este assistente nao prescreve, nao informa dose e nao autoriza alta. "
-                   "Toda sugestao exige validacao humana.")
+        st.caption("Este assistente não prescreve, não informa dose e não autoriza alta. "
+                   "Toda sugestão exige validação humana.")
 
     assistente = carregar_assistente(backend)
 
-    abas = st.tabs(["Assistente", "Painel", "Validacoes", "Auditoria", "Politicas"])
+    abas = st.tabs(["Assistente", "Painel", "Validações", "Auditoria", "Políticas"])
     with abas[0]:
         aba_assistente(assistente, banco)
     with abas[1]:

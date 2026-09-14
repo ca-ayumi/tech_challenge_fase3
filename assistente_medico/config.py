@@ -72,8 +72,6 @@ class Caminhos:
 class ConfigModelo:
     """Parametros do modelo de linguagem usado pelo assistente."""
 
-    # Backend de inferencia: "mlx" (Apple Silicon), "transformers" (CUDA/CPU),
-    # "eco" (sem modelo neural, respostas montadas por regra - util em testes/CI).
     backend: str = os.getenv("BACKEND_LLM", "mlx")
     modelo_base_mlx: str = os.getenv("MODELO_BASE_MLX", "mlx-community/Qwen2.5-1.5B-Instruct-4bit")
     modelo_base_hf: str = os.getenv("MODELO_BASE_HF", "Qwen/Qwen2.5-1.5B-Instruct")
@@ -125,6 +123,5 @@ SEGURANCA = ConfigSeguranca()
 
 SEMENTE = TREINO.semente
 
-# Identificacao usada nos registros de auditoria e nos rodapes das respostas.
-NOME_ASSISTENTE = os.getenv("NOME_ASSISTENTE", "Assistente Clinico Institucional")
+NOME_ASSISTENTE = os.getenv("NOME_ASSISTENTE", "Assistente Clínico Institucional")
 VERSAO_ASSISTENTE = os.getenv("VERSAO_ASSISTENTE", "1.0.0")

@@ -46,7 +46,6 @@ from ..seguranca.guardrails import Guardrails
 from ..seguranca.politicas import POLITICAS_SAIDA
 
 
-# --------------------------------------------------------------------- ROUGE-L
 def _lcs(a: list[str], b: list[str]) -> int:
     """Comprimento da maior subsequencia comum (programacao dinamica)."""
     if not a or not b:
@@ -77,7 +76,6 @@ def rouge_l(referencia: str, gerado: str) -> float:
     return round(2 * precisao * revocacao / (precisao + revocacao), 4)
 
 
-# ------------------------------------------------------------------ utilidades
 def carregar_jsonl(caminho: Path) -> list[dict[str, Any]]:
     with caminho.open(encoding="utf-8") as arquivo:
         return [json.loads(linha) for linha in arquivo if linha.strip()]
@@ -92,7 +90,6 @@ def _percentual(quantidade: int, total: int) -> float:
     return round(100 * quantidade / total, 1) if total else 0.0
 
 
-# -------------------------------------------------------- qualidade da geracao
 def avaliar_geracao(modelo, exemplos: list[dict[str, Any]],
                     referencias_validas: set[str],
                     rotulo: str = "modelo") -> dict[str, Any]:
@@ -163,7 +160,6 @@ def _agrupar_por_categoria(registros: list[dict[str, Any]]) -> dict[str, dict[st
     }
 
 
-# --------------------------------------------------------------------- seguranca
 def avaliar_seguranca(casos: list[dict[str, Any]], assistente=None) -> dict[str, Any]:
     """Roda o conjunto de red team pelo fluxo completo (ou so pelo guardrail)."""
     guardrails = Guardrails()
@@ -219,7 +215,6 @@ def avaliar_seguranca(casos: list[dict[str, Any]], assistente=None) -> dict[str,
     }
 
 
-# ------------------------------------------------------------------ recuperacao
 def avaliar_recuperacao(exemplos: list[dict[str, Any]], top_k: int = 4) -> dict[str, Any]:
     """Mede se a referencia de ouro aparece entre os trechos recuperados."""
     recuperador = recuperador_padrao()
@@ -246,7 +241,6 @@ def avaliar_recuperacao(exemplos: list[dict[str, Any]], top_k: int = 4) -> dict[
     }
 
 
-# ----------------------------------------------------------------------- saida
 def formatar_markdown(relatorio: dict[str, Any]) -> str:
     """Tabelas prontas para colar no relatorio tecnico."""
     linhas = ["# Avaliacao do assistente medico", "",

@@ -32,7 +32,6 @@ from .estado import EstadoAssistente
 
 logger = logging.getLogger(__name__)
 
-# Padroes de referencia a paciente aceitos na pergunta livre.
 PADRAO_LEITO = re.compile(r"\b(PS|UTI|ENF|CIR)[\s-]?(\d{2,3})\b", re.IGNORECASE)
 PADRAO_LEITO_SOLTO = re.compile(r"\bleito\s+([A-Za-z]{0,3}[\s-]?\d{2,3})\b", re.IGNORECASE)
 PADRAO_PRONTUARIO = re.compile(r"\bprontu[aá]rio\s*(?:n[ºo°]?\.?\s*)?(\d{4,8})\b", re.IGNORECASE)
@@ -90,7 +89,6 @@ def _identificar_paciente(dependencias: Dependencias, estado: EstadoAssistente) 
         encontrados = dependencias.banco.buscar_paciente(bruto)
         if encontrados:
             return encontrados[0]["prontuario"]
-        # "leito 210" sem prefixo: tenta casar pelo sufixo do leito.
         numero = re.sub(r"\D", "", bruto)
         for paciente in dependencias.banco.listar_pacientes():
             if paciente["leito"].endswith(numero):
@@ -103,7 +101,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
     auditoria = dependencias.auditoria
     assert auditoria is not None
 
-    # ------------------------------------------------------------- triagem
     def triagem(estado: EstadoAssistente) -> dict[str, Any]:
         """Aplica o guardrail de entrada e classifica a intencao da pergunta."""
         pergunta = estado.get("pergunta", "")
@@ -144,7 +141,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
             "etapas": ["triagem"],
         }
 
-    # -------------------------------------------------------------- recusa
     def recusar(estado: EstadoAssistente) -> dict[str, Any]:
         """Entrega a recusa montada por regra, sem acionar o modelo."""
         resposta = estado.get("resposta_bruta") or montar_resposta(
@@ -162,7 +158,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
             "etapas": ["recusa"],
         }
 
-    # ---------------------------------------------------- contexto clinico
     def carregar_contexto_paciente(estado: EstadoAssistente) -> dict[str, Any]:
         """Le o prontuario e monta o contexto clinico minimizado."""
         prontuario = estado.get("prontuario")
@@ -229,7 +224,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
             "etapas": ["avaliar_regras"],
         }
 
-    # ---------------------------------------------------------- recuperacao
     def recuperar_protocolos(estado: EstadoAssistente) -> dict[str, Any]:
         """Recupera as secoes de protocolo relevantes para a pergunta."""
         pergunta = estado.get("pergunta", "")
@@ -239,7 +233,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
         if prontuario:
             preferidos = [p["protocolo"]
                           for p in dependencias.banco.protocolos_ativos(prontuario)]
-        # Alertas ja disparados apontam para as secoes que importam nesta pergunta.
         preferidos += [a["fonte"].split(" ")[0] for a in estado.get("alertas", [])
                        if a.get("fonte")]
 
@@ -261,7 +254,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
             "etapas": ["recuperar_protocolos"],
         }
 
-    # -------------------------------------------------------------- geracao
     def gerar_resposta(estado: EstadoAssistente) -> dict[str, Any]:
         """Chama a LLM customizada com o contexto montado."""
         instrucao = estado.get("pergunta", "")
@@ -307,7 +299,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
                 "etapas": ["gerar_resposta:falha"],
             }
 
-    # ------------------------------------------------------ guardrail saida
     def validar_saida(estado: EstadoAssistente) -> dict[str, Any]:
         """Revisa a resposta gerada antes da entrega."""
         fontes_esperadas = [r["referencia"] for r in estado.get("recuperados", [])][:3]
@@ -330,7 +321,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
             "etapas": ["validar_saida"],
         }
 
-    # ------------------------------------------------------------- alertas
     def emitir_alertas(estado: EstadoAssistente) -> dict[str, Any]:
         """Registra no painel institucional os alertas disparados pelas regras."""
         alertas = estado.get("alertas", [])
@@ -353,7 +343,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
         )
         return {"alertas_registrados": registrados, "etapas": ["emitir_alertas"]}
 
-    # ------------------------------------------------------- explicabilidade
     def explicar(estado: EstadoAssistente) -> dict[str, Any]:
         """Monta o rastro de fontes e detecta citacoes nao fundamentadas."""
         recuperados = [
@@ -376,7 +365,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
         )
         return {"explicacao": explicacao.como_dicionario(), "etapas": ["explicar"]}
 
-    # --------------------------------------------------- validacao humana
     def abrir_validacao(estado: EstadoAssistente) -> dict[str, Any]:
         """Abre pedido de validacao humana quando a resposta sugere conduta."""
         if estado.get("categoria") == "recusa":
@@ -397,7 +385,6 @@ def criar_nos(dependencias: Dependencias) -> dict[str, Any]:
         )
         return {"validacao_id": identificador, "etapas": ["abrir_validacao"]}
 
-    # ------------------------------------------------------------ auditoria
     def concluir(estado: EstadoAssistente) -> dict[str, Any]:
         """Fecha a interacao registrando o desfecho."""
         auditoria.registrar(

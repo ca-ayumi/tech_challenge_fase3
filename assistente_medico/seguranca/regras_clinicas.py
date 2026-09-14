@@ -83,7 +83,6 @@ def _exame_por_codigo(contexto: ContextoPaciente, prefixo: str,
     return [e for e in fonte if str(e.get("codigo", "")).upper().startswith(prefixo)]
 
 
-# --------------------------------------------------------------------- regras
 def regra_sepse_antimicrobiano(contexto: ContextoPaciente) -> list[Alerta]:
     if not contexto.tem_protocolo("PROT-SEP-001"):
         return []
@@ -135,8 +134,6 @@ def regra_sepse_coletas_pendentes(contexto: ContextoPaciente) -> list[Alerta]:
 
 
 def regra_lactato_elevado(contexto: ContextoPaciente) -> list[Alerta]:
-    # Interessa o lactato mais recente: uma curva em queda nao deve disparar
-    # alerta por causa do primeiro valor da serie.
     coletas = sorted(
         _exame_por_codigo(contexto, "LAC"),
         key=lambda e: e.get("liberado_em") or "",
@@ -213,7 +210,7 @@ def regra_avc_tomografia(contexto: ContextoPaciente) -> list[Alerta]:
     if evento and evento.get("registrado_em"):
         decorridos = minutos_desde(evento["registrado_em"])
         if decorridos is not None:
-            restante = 270 - decorridos     # 4,5 horas de janela de trombolise
+            restante = 270 - decorridos
             if 0 < restante <= 30:
                 alertas.append(Alerta(
                     prioridade="maxima", categoria="janela_terapeutica",

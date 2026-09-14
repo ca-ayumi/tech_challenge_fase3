@@ -130,7 +130,6 @@ class RecuperadorProtocolos:
     def _scores_bm25(self, consulta: list[str]) -> list[float]:
         if self._bm25 is not None:
             return list(self._bm25.get_scores(consulta))
-        # Fallback simples por sobreposicao de termos, caso rank_bm25 falte.
         conjunto = set(consulta)
         return [
             len(conjunto & set(documento)) / (len(conjunto) or 1) for documento in self._corpus
@@ -149,8 +148,6 @@ class RecuperadorProtocolos:
 
         scores = self._scores_bm25(tokens)
 
-        # Boost para documentos citados explicitamente na pergunta ou indicados
-        # pelo fluxo (por exemplo, protocolos ativos do paciente).
         citados = {d.upper() for d in PADRAO_DOCUMENTO.findall(consulta)}
         preferidos = {d.upper() for d in documentos_preferidos}
         secoes_citadas = set(PADRAO_SECAO.findall(consulta))
@@ -161,20 +158,14 @@ class RecuperadorProtocolos:
             score = float(scores[indice])
             motivos = ["bm25"]
 
-            # Secoes de "Referencias internas" sao apenas listas de identificadores:
-            # casam com muitas consultas e nunca respondem nada.
             if "referencias internas" in normalizar(trecho.titulo_secao):
                 score *= 0.2
 
-            # Sobreposicao com o titulo da secao: sinal forte e barato.
             overlap = tokens_consulta & set(tokenizar(trecho.titulo_secao))
             if overlap:
                 score += 2.5 * len(overlap)
                 motivos.append(f"titulo da secao ({', '.join(sorted(overlap))})")
 
-            # Citacao explicita entra como bonus aditivo: uma pergunta do tipo
-            # "o que diz o PROT-GOV-010 §3" precisa recuperar aquela secao mesmo
-            # que o texto dela nao repita o proprio identificador.
             if trecho.documento.upper() in citados:
                 score += 8.0
                 motivos.append("documento citado na pergunta")
@@ -190,8 +181,6 @@ class RecuperadorProtocolos:
 
         resultados.sort(key=lambda item: item.score, reverse=True)
         selecionados = [r for r in resultados if r.score >= minimo_score][:top_k]
-        # Se o limiar cortou tudo, devolve o melhor resultado mesmo assim, para
-        # que o fluxo consiga sinalizar "fonte fraca" em vez de "sem fonte".
         if not selecionados and resultados:
             melhor = resultados[0]
             selecionados = [TrechoRecuperado(melhor.trecho, melhor.score, melhor.motivo + " (abaixo do limiar)")]

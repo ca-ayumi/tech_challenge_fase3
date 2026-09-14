@@ -27,7 +27,7 @@ class FonteUtilizada:
 
     referencia: str
     titulo: str
-    tipo: str          # protocolo | prontuario | regra
+    tipo: str
     detalhe: str = ""
     score: float | None = None
     versao: str = ""
@@ -82,15 +82,15 @@ class Explicacao:
         linhas = ["#### Base da resposta"]
         if self.fontes:
             for fonte in self.fontes:
-                sufixo = f" (relevancia {fonte.score:.2f})" if fonte.score is not None else ""
-                versao = f" — versao {fonte.versao}" if fonte.versao else ""
+                sufixo = f" (relevância {fonte.score:.2f})" if fonte.score is not None else ""
+                versao = f" — versão {fonte.versao}" if fonte.versao else ""
                 linhas.append(f"- **{fonte.referencia}** — {fonte.titulo}{versao}{sufixo}")
         else:
             linhas.append("- Nenhum documento institucional recuperado.")
 
         if self.campos_prontuario:
             linhas.append("")
-            linhas.append("**Campos do prontuario consultados:** "
+            linhas.append("**Campos do prontuário consultados:** "
                           + ", ".join(f"`{campo}`" for campo in self.campos_prontuario))
         if self.regras_aplicadas:
             linhas.append("")
@@ -98,12 +98,12 @@ class Explicacao:
                           + ", ".join(self.regras_aplicadas))
         if self.nao_fundamentadas:
             linhas.append("")
-            linhas.append("> **Atencao:** a resposta cita "
+            linhas.append("> **Atenção:** a resposta cita "
                           + ", ".join(f"`{r}`" for r in self.nao_fundamentadas)
-                          + ", que nao esta entre os documentos recuperados. "
-                            "Confira a citacao antes de usar.")
+                          + ", que não está entre os documentos recuperados. "
+                            "Confira a citação antes de usar.")
         linhas.append("")
-        linhas.append(f"_Cobertura das citacoes: {self.cobertura:.0%}_")
+        linhas.append(f"_Cobertura das citações: {self.cobertura:.0%}_")
         return "\n".join(linhas)
 
 
@@ -122,7 +122,6 @@ def montar_explicacao(
     recuperados = recuperados or []
     estruturada = separar_secoes(resposta)
 
-    # Referencias citadas: as do bloco "Fontes" mais as que aparecem no corpo.
     citadas: list[str] = []
     for texto in [*estruturada.fontes, estruturada.corpo]:
         for referencia in referencias_citadas(texto):
@@ -147,8 +146,6 @@ def montar_explicacao(
             versao=trecho.versao,
         ))
 
-    # Uma citacao ao documento inteiro (PROT-SEP-001) e considerada fundamentada
-    # se qualquer secao daquele documento foi recuperada.
     documentos_recuperados = {chave.split("§")[0] for chave in disponiveis}
 
     fontes: list[FonteUtilizada] = []
@@ -161,21 +158,19 @@ def montar_explicacao(
                 fontes.append(fonte)
         elif chave.split("§")[0] in documentos_recuperados:
             fontes.append(FonteUtilizada(
-                referencia=referencia, titulo="Secao do documento recuperado",
-                tipo="protocolo", detalhe="documento recuperado, secao nao conferida",
+                referencia=referencia, titulo="Seção do documento recuperado",
+                tipo="protocolo", detalhe="documento recuperado, seção não conferida",
             ))
         else:
             nao_fundamentadas.append(referencia)
 
-    # Fontes recuperadas que o modelo nao chegou a citar continuam listadas:
-    # o auditor precisa ver o que o sistema consultou, nao so o que citou.
     for fonte in disponiveis.values():
         if fonte not in fontes:
             fontes.append(fonte)
 
     if campos_prontuario:
         fontes.append(FonteUtilizada(
-            referencia="Prontuario eletronico", tipo="prontuario",
+            referencia="Prontuário eletrônico", tipo="prontuario",
             titulo="Registros estruturados do paciente",
             detalhe=", ".join(campos_prontuario),
         ))

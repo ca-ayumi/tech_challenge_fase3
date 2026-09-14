@@ -56,9 +56,9 @@ class ResultadoEntrada:
     """Decisao do guardrail de entrada."""
 
     permitido: bool
-    categoria: str                      # permitido | recusa | emergencia
+    categoria: str
     violacoes: list[Violacao] = field(default_factory=list)
-    resposta_pronta: str | None = None  # preenchida quando o modelo nao deve ser chamado
+    resposta_pronta: str | None = None
 
     @property
     def codigos(self) -> list[str]:
@@ -101,11 +101,6 @@ class Guardrails:
 
     def __init__(self, anonimizador: Anonimizador | None = None,
                  exigir_validacao: bool | None = None) -> None:
-        # Na entrega ao profissional, o numero de prontuario e o identificador de
-        # trabalho: mascara-lo atrapalharia o uso sem ganho de privacidade, ja que
-        # o profissional ja tem acesso legitimo aquele paciente. O mascaramento
-        # total continua valendo para a trilha de auditoria, que usa outro
-        # anonimizador (ver assistente_medico/auditoria.py).
         self.anonimizador = anonimizador or Anonimizador(
             estrategias={"prontuario": "manter"}
         )
@@ -113,7 +108,6 @@ class Guardrails:
             SEGURANCA.exigir_validacao_humana if exigir_validacao is None else exigir_validacao
         )
 
-    # ------------------------------------------------------------- entrada
     def avaliar_entrada(self, pergunta: str, perfil: str = "medico") -> ResultadoEntrada:
         violacoes: list[Violacao] = []
         emergencia: Politica | None = None
@@ -143,8 +137,6 @@ class Guardrails:
             elif politica.acao == "bloquear":
                 bloqueios.append(politica)
 
-        # A emergencia tem precedencia: mesmo que a frase tambem peca uma dose,
-        # a orientacao de acionar a equipe vem primeiro.
         if emergencia is not None:
             return ResultadoEntrada(
                 permitido=True, categoria="emergencia", violacoes=violacoes,
@@ -152,7 +144,6 @@ class Guardrails:
             )
 
         if bloqueios:
-            # Uma mesma politica pode disparar pelo perfil e pelo texto; conta uma vez.
             unicos: list[Politica] = []
             for politica in bloqueios:
                 if politica.codigo not in {p.codigo for p in unicos}:
@@ -192,7 +183,6 @@ class Guardrails:
                 vistas.append(fonte)
         return montar_resposta(corpo, vistas, ROTULO_RECUSA)
 
-    # --------------------------------------------------------------- saida
     def avaliar_saida(self, texto: str, categoria_entrada: str = "permitido",
                       fontes_esperadas: list[str] | None = None) -> ResultadoSaida:
         violacoes: list[Violacao] = []
@@ -228,10 +218,7 @@ class Guardrails:
 
         texto_final = texto
 
-        # Vazamento de dados pessoais na saida.
         resultado_pii = self.anonimizador.anonimizar(texto_final)
-        # Identificadores marcados como "manter" (prontuario) foram detectados mas
-        # nao alterados: nao configuram vazamento e nao viram violacao.
         efetivas = [o for o in resultado_pii.ocorrencias if o.estrategia != "manter"]
         if efetivas and SEGURANCA.mascarar_pii_nos_logs:
             tipos = ", ".join(sorted({o.tipo for o in efetivas}))
@@ -244,7 +231,6 @@ class Guardrails:
             texto_final = resultado_pii.texto
             avisos.append("dados pessoais mascarados na resposta")
 
-        # Estrutura obrigatoria.
         if not segue_formato(texto_final):
             estruturada = separar_secoes(texto_final)
             corpo = estruturada.corpo or texto_final.strip()
@@ -260,7 +246,6 @@ class Guardrails:
 
         estruturada = separar_secoes(texto_final)
 
-        # Rastreabilidade: resposta sem fonte e marcada como nao fundamentada.
         if not estruturada.fontes:
             if fontes_esperadas:
                 texto_final = montar_resposta(estruturada.corpo, fontes_esperadas,
@@ -280,7 +265,6 @@ class Guardrails:
                 ))
                 avisos.append("resposta marcada como nao fundamentada")
 
-        # Rotulo de validacao humana.
         estruturada = separar_secoes(texto_final)
         if self.exigir_validacao and not estruturada.validacao:
             rotulo = ROTULO_EMERGENCIA if categoria_entrada == "emergencia" else ROTULO_VALIDACAO
