@@ -1,4 +1,4 @@
-.PHONY: ajuda instalar preparar treinar avaliar testar lint app perguntar limpar
+.PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar
 
 PY := .venv/bin/python
 PIP := .venv/bin/pip
@@ -10,6 +10,7 @@ ajuda:
 	@echo "  treinar    Executa o fine-tuning por LoRA (backend MLX)"
 	@echo "  avaliar    Avalia o modelo ajustado e compara com o modelo base"
 	@echo "  testar     Roda a suite de testes"
+	@echo "  cobertura  Roda a suite com relatorio de cobertura"
 	@echo "  lint       Roda o ruff"
 	@echo "  app        Sobe a interface Streamlit"
 	@echo "  perguntar  Ex.: make perguntar P='Ha pendencia no leito PS-07?'"
@@ -30,6 +31,9 @@ avaliar:
 
 testar:
 	$(PY) -m pytest
+
+cobertura:
+	$(PY) -m pytest --cov=assistente_medico --cov-report=term-missing
 
 lint:
 	.venv/bin/ruff check assistente_medico tests scripts

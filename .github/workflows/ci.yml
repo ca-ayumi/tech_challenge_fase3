@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BACKEND_LLM: eco
+  SAL_ANONIMIZACAO: sal-de-integracao-continua
+
+jobs:
+  qualidade:
+    name: Lint e testes (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+
+    steps:
+      - name: Obter o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Verificar estilo (ruff)
+        run: ruff check assistente_medico tests scripts
+
+      - name: Rodar a suite de testes
+        run: |
+          pytest --cov=assistente_medico \
+                 --cov-report=term-missing \
+                 --cov-report=xml \
+                 --cov-fail-under=75 \
+                 --junitxml=resultado-testes.xml
+
+      - name: Publicar artefatos do relatorio
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes-py${{ matrix.python }}
+          path: |
+            resultado-testes.xml
+            coverage.xml
+          retention-days: 14
+
+  pipeline-de-dados:
+    name: Reconstruir o dataset a partir dos dados brutos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Gerar prontuarios, banco e dataset
+        run: python -m assistente_medico.cli preparar --forcar
+
+      - name: Conferir que a curadoria nao deixou passar PII
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from assistente_medico.dados.curadoria import detectar_pii_residual
+
+          relatorio = json.loads(Path("dados/processados/relatorio_dataset.json").read_text())
+          curadoria = relatorio["curadoria"]
+          assert not curadoria["pii_residual"], f"PII residual: {curadoria['pii_residual']}"
+
+          vazamentos = []
+          for particao in ("train", "valid", "test"):
+              for linha in Path(f"dados/processados/{particao}.jsonl").read_text().splitlines():
+                  for mensagem in json.loads(linha)["messages"]:
+                      tipos = detectar_pii_residual(mensagem["content"])
+                      if tipos:
+                          vazamentos.append((particao, tipos))
+          assert not vazamentos, f"identificadores diretos no dataset: {vazamentos[:5]}"
+
+          print(f"dataset reconstruido: {relatorio['particoes']}")
+          print("nenhum identificador direto encontrado nas tres particoes")
+          PY
