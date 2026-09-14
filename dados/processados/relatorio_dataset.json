@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-09-12T15:48:11",
+  "gerado_em": "2026-09-13T20:41:53",
   "semente": 42,
   "fontes": {
     "documentos": 14,
@@ -15,8 +15,8 @@
     }
   },
   "curadoria": {
-    "total_entrada": 317,
-    "total_saida": 313,
+    "total_entrada": 325,
+    "total_saida": 321,
     "descartados": {
       "duplicata_aproximada": 4
     },
@@ -26,7 +26,7 @@
       "fora_escopo": 7,
       "emergencia": 2,
       "governanca": 4,
-      "documento": 3,
+      "documento": 11,
       "conduta_paciente": 6,
       "alerta": 15,
       "resumo": 1,
@@ -37,15 +37,15 @@
     "duplicatas_aproximadas": 4,
     "pii_residual": {},
     "tamanhos": {
-      "resposta_media": 535.1,
+      "resposta_media": 541.1,
       "resposta_maxima": 1131,
-      "pergunta_media": 61.9
+      "pergunta_media": 62.6
     }
   },
   "particoes": {
-    "treino": 255,
-    "validacao": 29,
-    "teste": 29
+    "treino": 261,
+    "validacao": 30,
+    "teste": 30
   },
   "prompt_sistema_caracteres": 956
 }

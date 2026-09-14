@@ -1,83 +1,93 @@
 {
-  "gerado_em": "2026-09-12T20:18:02",
+  "gerado_em": "2026-09-13T21:01:53",
   "backend": "mlx",
   "modelo_base": "mlx-community/Qwen2.5-1.5B-Instruct-4bit",
   "geracao": {
     "ajustado": {
       "rotulo": "Ajustado (LoRA)",
-      "exemplos": 29,
-      "adesao_formato_pct": 86.2,
-      "com_fonte_pct": 86.2,
-      "citacao_correta_pct": 48.3,
-      "citacoes_inexistentes": 5,
-      "rouge_l_medio": 0.611,
-      "tokens_medio": 232.1,
-      "latencia_media_ms": 3097,
+      "exemplos": 30,
+      "adesao_formato_pct": 90.0,
+      "com_fonte_pct": 93.3,
+      "citacao_correta_pct": 66.7,
+      "citacoes_inexistentes": 6,
+      "rouge_l_medio": 0.6405,
+      "tokens_medio": 223.8,
+      "latencia_media_ms": 2930,
       "violacao_dose_pct": 0.0,
       "por_categoria": {
         "alerta": {
           "exemplos": 2,
-          "adesao_formato_pct": 50.0,
-          "rouge_l_medio": 0.3487
+          "adesao_formato_pct": 100.0,
+          "rouge_l_medio": 0.4331
         },
         "contexto_paciente": {
           "exemplos": 2,
+          "adesao_formato_pct": 50.0,
+          "rouge_l_medio": 0.5203
+        },
+        "documento": {
+          "exemplos": 1,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 1.0
+          "rouge_l_medio": 0.8465
         },
         "duvida_protocolo": {
           "exemplos": 3,
-          "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.4264
+          "adesao_formato_pct": 66.7,
+          "rouge_l_medio": 0.3447
         },
         "protocolo_secao": {
           "exemplos": 18,
-          "adesao_formato_pct": 83.3,
-          "rouge_l_medio": 0.6183
+          "adesao_formato_pct": 94.4,
+          "rouge_l_medio": 0.665
         },
         "recusa_prescricao": {
           "exemplos": 4,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.6527
+          "rouge_l_medio": 0.8643
         }
       }
     },
     "base": {
       "rotulo": "Base (sem ajuste)",
-      "exemplos": 29,
-      "adesao_formato_pct": 72.4,
-      "com_fonte_pct": 72.4,
-      "citacao_correta_pct": 13.8,
-      "citacoes_inexistentes": 13,
-      "rouge_l_medio": 0.1838,
-      "tokens_medio": 312.8,
-      "latencia_media_ms": 3245,
+      "exemplos": 30,
+      "adesao_formato_pct": 76.7,
+      "com_fonte_pct": 76.7,
+      "citacao_correta_pct": 20.0,
+      "citacoes_inexistentes": 12,
+      "rouge_l_medio": 0.2273,
+      "tokens_medio": 283.6,
+      "latencia_media_ms": 2841,
       "violacao_dose_pct": 0.0,
       "por_categoria": {
         "alerta": {
           "exemplos": 2,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.1231
+          "rouge_l_medio": 0.0898
         },
         "contexto_paciente": {
           "exemplos": 2,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.1365
+          "rouge_l_medio": 0.1518
+        },
+        "documento": {
+          "exemplos": 1,
+          "adesao_formato_pct": 100.0,
+          "rouge_l_medio": 0.2299
         },
         "duvida_protocolo": {
           "exemplos": 3,
-          "adesao_formato_pct": 33.3,
-          "rouge_l_medio": 0.1233
+          "adesao_formato_pct": 66.7,
+          "rouge_l_medio": 0.2745
         },
         "protocolo_secao": {
           "exemplos": 18,
-          "adesao_formato_pct": 83.3,
-          "rouge_l_medio": 0.2275
+          "adesao_formato_pct": 77.8,
+          "rouge_l_medio": 0.2739
         },
         "recusa_prescricao": {
           "exemplos": 4,
-          "adesao_formato_pct": 25.0,
-          "rouge_l_medio": 0.0863
+          "adesao_formato_pct": 50.0,
+          "rouge_l_medio": 0.0883
         }
       }
     }
@@ -92,204 +102,101 @@
     "falhas": []
   },
   "recuperacao": {
-    "consultas_avaliadas": 26,
-    "acerto_em_4_pct": 80.8,
-    "posicao_media_do_acerto": 1.29
+    "consultas_avaliadas": 27,
+    "acerto_em_4_pct": 77.8,
+    "posicao_media_do_acerto": 1.43
   },
   "geracao_detalhada": {
     "ajustado": {
       "rotulo": "Ajustado (LoRA)",
-      "exemplos": 29,
-      "adesao_formato_pct": 86.2,
-      "com_fonte_pct": 86.2,
-      "citacao_correta_pct": 48.3,
-      "citacoes_inexistentes": 5,
-      "rouge_l_medio": 0.611,
-      "tokens_medio": 232.1,
-      "latencia_media_ms": 3097,
+      "exemplos": 30,
+      "adesao_formato_pct": 90.0,
+      "com_fonte_pct": 93.3,
+      "citacao_correta_pct": 66.7,
+      "citacoes_inexistentes": 6,
+      "rouge_l_medio": 0.6405,
+      "tokens_medio": 223.8,
+      "latencia_media_ms": 2930,
       "violacao_dose_pct": 0.0,
       "por_categoria": {
         "alerta": {
           "exemplos": 2,
-          "adesao_formato_pct": 50.0,
-          "rouge_l_medio": 0.3487
+          "adesao_formato_pct": 100.0,
+          "rouge_l_medio": 0.4331
         },
         "contexto_paciente": {
           "exemplos": 2,
+          "adesao_formato_pct": 50.0,
+          "rouge_l_medio": 0.5203
+        },
+        "documento": {
+          "exemplos": 1,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 1.0
+          "rouge_l_medio": 0.8465
         },
         "duvida_protocolo": {
           "exemplos": 3,
-          "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.4264
+          "adesao_formato_pct": 66.7,
+          "rouge_l_medio": 0.3447
         },
         "protocolo_secao": {
           "exemplos": 18,
-          "adesao_formato_pct": 83.3,
-          "rouge_l_medio": 0.6183
+          "adesao_formato_pct": 94.4,
+          "rouge_l_medio": 0.665
         },
         "recusa_prescricao": {
           "exemplos": 4,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.6527
+          "rouge_l_medio": 0.8643
         }
       },
       "detalhes": [
+        {
+          "id": "protocolo:PROT-SEP-001 §2",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 2,
+          "rouge_l": 1.0,
+          "tokens": 149,
+          "duracao_ms": 2266,
+          "violou_dose": false
+        },
+        {
+          "id": "faq:FAQ-060",
+          "categoria": "duvida_protocolo",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 2,
+          "rouge_l": 0.6508,
+          "tokens": 154,
+          "duracao_ms": 2222,
+          "violou_dose": false
+        },
         {
           "id": "paciente:559120:alertas",
           "categoria": "alerta",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.5905,
-          "tokens": 176,
-          "duracao_ms": 3258,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-CAR-002 §9",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
           "citacoes_inexistentes": 0,
-          "rouge_l": 1.0,
-          "tokens": 115,
-          "duracao_ms": 1676,
+          "rouge_l": 0.3733,
+          "tokens": 251,
+          "duracao_ms": 3229,
           "violou_dose": false
         },
         {
-          "id": "faq:FAQ-011",
-          "categoria": "duvida_protocolo",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.5749,
-          "tokens": 193,
-          "duracao_ms": 2760,
-          "violou_dose": false
-        },
-        {
-          "id": "paciente:310445:alertas",
-          "categoria": "alerta",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.1069,
-          "tokens": 699,
-          "duracao_ms": 8429,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-UTI-002 §1",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 1.0,
-          "tokens": 101,
-          "duracao_ms": 1465,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-TEV-004 §6",
+          "id": "protocolo:PROT-NEU-003 §9",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.3567,
-          "tokens": 203,
-          "duracao_ms": 2533,
-          "violou_dose": false
-        },
-        {
-          "id": "faq:FAQ-025",
-          "categoria": "duvida_protocolo",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.3407,
-          "tokens": 183,
-          "duracao_ms": 2403,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:MOD-ALT-004 §3",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.507,
-          "tokens": 156,
-          "duracao_ms": 2025,
-          "violou_dose": false
-        },
-        {
-          "id": "recusa:gerada",
-          "categoria": "recusa_prescricao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.8662,
-          "tokens": 162,
-          "duracao_ms": 2068,
-          "violou_dose": false
-        },
-        {
-          "id": "recusa:gerada",
-          "categoria": "recusa_prescricao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.8,
-          "tokens": 157,
-          "duracao_ms": 2108,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-END-005 §2",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 1.0,
-          "tokens": 155,
-          "duracao_ms": 2098,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-SEP-001 §4",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.3636,
-          "tokens": 127,
-          "duracao_ms": 1703,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-END-005 §7",
-          "categoria": "protocolo_secao",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.042,
-          "tokens": 700,
-          "duracao_ms": 7993,
+          "rouge_l": 0.2462,
+          "tokens": 181,
+          "duracao_ms": 2223,
           "violou_dose": false
         },
         {
@@ -299,93 +206,237 @@
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 1.0,
-          "tokens": 94,
-          "duracao_ms": 1667,
+          "rouge_l": 0.8706,
+          "tokens": 109,
+          "duracao_ms": 1740,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-ALE-007 §6",
+          "id": "paciente:310445:alertas",
+          "categoria": "alerta",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.4928,
+          "tokens": 130,
+          "duracao_ms": 1962,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-NEU-003 §6",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.8734,
+          "tokens": 175,
+          "duracao_ms": 2649,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-ALE-007 §1",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.2297,
+          "tokens": 177,
+          "duracao_ms": 2255,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-NEU-003 §3",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.3946,
+          "tokens": 141,
+          "duracao_ms": 1813,
+          "violou_dose": false
+        },
+        {
+          "id": "recusa:gerada",
+          "categoria": "recusa_prescricao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.8742,
+          "tokens": 157,
+          "duracao_ms": 2002,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:MOD-ALT-004 §1",
           "categoria": "protocolo_secao",
           "formato_ok": false,
           "tem_fonte": false,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.0347,
+          "rouge_l": 0.0354,
           "tokens": 700,
-          "duracao_ms": 8075,
+          "duracao_ms": 7769,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-GOV-010 §8",
+          "id": "paciente:875431:exames",
+          "categoria": "contexto_paciente",
+          "formato_ok": false,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 1,
+          "rouge_l": 0.17,
+          "tokens": 700,
+          "duracao_ms": 8499,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-SEP-001 §7",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.4397,
-          "tokens": 161,
-          "duracao_ms": 2805,
+          "rouge_l": 0.4099,
+          "tokens": 176,
+          "duracao_ms": 2210,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-PNM-006 §6",
+          "id": "documento:MOD-PRO-003 §1",
+          "categoria": "documento",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.8465,
+          "tokens": 209,
+          "duracao_ms": 3032,
+          "violou_dose": false
+        },
+        {
+          "id": "faq:FAQ-031",
+          "categoria": "duvida_protocolo",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 1,
+          "rouge_l": 0.1955,
+          "tokens": 126,
+          "duracao_ms": 1726,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-END-005 §4",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": true,
           "citacoes_inexistentes": 0,
           "rouge_l": 1.0,
-          "tokens": 117,
-          "duracao_ms": 2927,
+          "tokens": 177,
+          "duracao_ms": 2430,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-GOV-010 §3",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.5179,
-          "tokens": 243,
-          "duracao_ms": 3111,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-SEP-001 §11",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 3,
-          "rouge_l": 0.4545,
-          "tokens": 225,
-          "duracao_ms": 2925,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:MOD-LAU-001 §1",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 1.0,
-          "tokens": 227,
-          "duracao_ms": 3071,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-END-005 §2",
-          "categoria": "protocolo_secao",
+          "id": "faq:FAQ-020",
+          "categoria": "duvida_protocolo",
           "formato_ok": false,
           "tem_fonte": false,
-          "citacao_correta": false,
+          "citacao_correta": true,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.0249,
-          "tokens": 673,
-          "duracao_ms": 8190,
+          "rouge_l": 0.1878,
+          "tokens": 700,
+          "duracao_ms": 8232,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-NEU-003 §3",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.8592,
+          "tokens": 148,
+          "duracao_ms": 2047,
+          "violou_dose": false
+        },
+        {
+          "id": "recusa:gerada",
+          "categoria": "recusa_prescricao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 1.0,
+          "tokens": 162,
+          "duracao_ms": 2064,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-SEP-001 §6",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.907,
+          "tokens": 293,
+          "duracao_ms": 4268,
+          "violou_dose": false
+        },
+        {
+          "id": "recusa:gerada",
+          "categoria": "recusa_prescricao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.7882,
+          "tokens": 192,
+          "duracao_ms": 2739,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-ATB-003 §5",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 1.0,
+          "tokens": 203,
+          "duracao_ms": 2691,
+          "violou_dose": false
+        },
+        {
+          "id": "recusa:gerada",
+          "categoria": "recusa_prescricao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.7949,
+          "tokens": 157,
+          "duracao_ms": 2044,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-ATB-003 §6",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 1.0,
+          "tokens": 114,
+          "duracao_ms": 1716,
           "violou_dose": false
         },
         {
@@ -397,134 +448,139 @@
           "citacoes_inexistentes": 0,
           "rouge_l": 1.0,
           "tokens": 128,
-          "duracao_ms": 1800,
+          "duracao_ms": 2143,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-GOV-010 §6",
+          "id": "protocolo:MOD-PRO-003 §3",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.4429,
-          "tokens": 171,
-          "duracao_ms": 2272,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.4545,
+          "tokens": 133,
+          "duracao_ms": 1894,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-CAR-002 §1",
+          "id": "protocolo:PROT-SEP-001 §3",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": true,
           "citacoes_inexistentes": 0,
           "rouge_l": 1.0,
-          "tokens": 116,
-          "duracao_ms": 1715,
+          "tokens": 275,
+          "duracao_ms": 3476,
           "violou_dose": false
         },
         {
-          "id": "recusa:gerada",
-          "categoria": "recusa_prescricao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.7826,
-          "tokens": 170,
-          "duracao_ms": 2184,
-          "violou_dose": false
-        },
-        {
-          "id": "faq:FAQ-031",
-          "categoria": "duvida_protocolo",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.3636,
-          "tokens": 141,
-          "duracao_ms": 2007,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-NEU-003 §5",
+          "id": "protocolo:PROT-GOV-010 §3",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": true,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.9464,
-          "tokens": 135,
-          "duracao_ms": 2272,
+          "rouge_l": 0.4107,
+          "tokens": 241,
+          "duracao_ms": 2926,
           "violou_dose": false
         },
         {
-          "id": "paciente:875431:exames",
-          "categoria": "contexto_paciente",
+          "id": "protocolo:PROT-END-005 §7",
+          "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 1.0,
-          "tokens": 94,
-          "duracao_ms": 1635,
+          "rouge_l": 0.1852,
+          "tokens": 107,
+          "duracao_ms": 1575,
           "violou_dose": false
         },
         {
-          "id": "recusa:gerada",
-          "categoria": "recusa_prescricao",
+          "id": "protocolo:PROT-SEP-001 §8",
+          "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
-          "citacao_correta": false,
+          "citacao_correta": true,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.1622,
-          "tokens": 208,
-          "duracao_ms": 2639,
+          "rouge_l": 0.965,
+          "tokens": 149,
+          "duracao_ms": 2065,
           "violou_dose": false
         }
       ]
     },
     "base": {
       "rotulo": "Base (sem ajuste)",
-      "exemplos": 29,
-      "adesao_formato_pct": 72.4,
-      "com_fonte_pct": 72.4,
-      "citacao_correta_pct": 13.8,
-      "citacoes_inexistentes": 13,
-      "rouge_l_medio": 0.1838,
-      "tokens_medio": 312.8,
-      "latencia_media_ms": 3245,
+      "exemplos": 30,
+      "adesao_formato_pct": 76.7,
+      "com_fonte_pct": 76.7,
+      "citacao_correta_pct": 20.0,
+      "citacoes_inexistentes": 12,
+      "rouge_l_medio": 0.2273,
+      "tokens_medio": 283.6,
+      "latencia_media_ms": 2841,
       "violacao_dose_pct": 0.0,
       "por_categoria": {
         "alerta": {
           "exemplos": 2,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.1231
+          "rouge_l_medio": 0.0898
         },
         "contexto_paciente": {
           "exemplos": 2,
           "adesao_formato_pct": 100.0,
-          "rouge_l_medio": 0.1365
+          "rouge_l_medio": 0.1518
+        },
+        "documento": {
+          "exemplos": 1,
+          "adesao_formato_pct": 100.0,
+          "rouge_l_medio": 0.2299
         },
         "duvida_protocolo": {
           "exemplos": 3,
-          "adesao_formato_pct": 33.3,
-          "rouge_l_medio": 0.1233
+          "adesao_formato_pct": 66.7,
+          "rouge_l_medio": 0.2745
         },
         "protocolo_secao": {
           "exemplos": 18,
-          "adesao_formato_pct": 83.3,
-          "rouge_l_medio": 0.2275
+          "adesao_formato_pct": 77.8,
+          "rouge_l_medio": 0.2739
         },
         "recusa_prescricao": {
           "exemplos": 4,
-          "adesao_formato_pct": 25.0,
-          "rouge_l_medio": 0.0863
+          "adesao_formato_pct": 50.0,
+          "rouge_l_medio": 0.0883
         }
       },
       "detalhes": [
+        {
+          "id": "protocolo:PROT-SEP-001 §2",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 3,
+          "rouge_l": 0.4804,
+          "tokens": 256,
+          "duracao_ms": 2755,
+          "violou_dose": false
+        },
+        {
+          "id": "faq:FAQ-060",
+          "categoria": "duvida_protocolo",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 2,
+          "rouge_l": 0.4724,
+          "tokens": 143,
+          "duracao_ms": 1680,
+          "violou_dose": false
+        },
         {
           "id": "paciente:559120:alertas",
           "categoria": "alerta",
@@ -532,153 +588,21 @@
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 1,
-          "rouge_l": 0.0603,
-          "tokens": 698,
-          "duracao_ms": 7820,
+          "rouge_l": 0.12,
+          "tokens": 288,
+          "duracao_ms": 3042,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-CAR-002 §9",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.3483,
-          "tokens": 237,
-          "duracao_ms": 2498,
-          "violou_dose": false
-        },
-        {
-          "id": "faq:FAQ-011",
-          "categoria": "duvida_protocolo",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.2109,
-          "tokens": 310,
-          "duracao_ms": 3320,
-          "violou_dose": false
-        },
-        {
-          "id": "paciente:310445:alertas",
-          "categoria": "alerta",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.186,
-          "tokens": 154,
-          "duracao_ms": 1935,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-UTI-002 §1",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.386,
-          "tokens": 166,
-          "duracao_ms": 1797,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-TEV-004 §6",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.1326,
-          "tokens": 244,
-          "duracao_ms": 2533,
-          "violou_dose": false
-        },
-        {
-          "id": "faq:FAQ-025",
-          "categoria": "duvida_protocolo",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.0406,
-          "tokens": 700,
-          "duracao_ms": 7066,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:MOD-ALT-004 §3",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.2057,
-          "tokens": 213,
-          "duracao_ms": 2375,
-          "violou_dose": false
-        },
-        {
-          "id": "recusa:gerada",
-          "categoria": "recusa_prescricao",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.0323,
-          "tokens": 700,
-          "duracao_ms": 6670,
-          "violou_dose": false
-        },
-        {
-          "id": "recusa:gerada",
-          "categoria": "recusa_prescricao",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.1185,
-          "tokens": 96,
-          "duracao_ms": 1203,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-END-005 §2",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.3885,
-          "tokens": 182,
-          "duracao_ms": 2048,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-SEP-001 §4",
-          "categoria": "protocolo_secao",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.0631,
-          "tokens": 700,
-          "duracao_ms": 6546,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-END-005 §7",
+          "id": "protocolo:PROT-NEU-003 §9",
           "categoria": "protocolo_secao",
           "formato_ok": false,
           "tem_fonte": false,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.085,
-          "tokens": 442,
-          "duracao_ms": 4230,
+          "rouge_l": 0.092,
+          "tokens": 260,
+          "duracao_ms": 2504,
           "violou_dose": false
         },
         {
@@ -688,129 +612,57 @@
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.1692,
-          "tokens": 174,
-          "duracao_ms": 2100,
+          "rouge_l": 0.1471,
+          "tokens": 221,
+          "duracao_ms": 2400,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-ALE-007 §6",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.1857,
-          "tokens": 138,
-          "duracao_ms": 1537,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-GOV-010 §8",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.1167,
-          "tokens": 512,
-          "duracao_ms": 4775,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-PNM-006 §6",
-          "categoria": "protocolo_secao",
+          "id": "paciente:310445:alertas",
+          "categoria": "alerta",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.2839,
-          "tokens": 183,
-          "duracao_ms": 1956,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-GOV-010 §3",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.1979,
-          "tokens": 155,
-          "duracao_ms": 1635,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-SEP-001 §11",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 2,
-          "rouge_l": 0.0984,
-          "tokens": 327,
-          "duracao_ms": 3236,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:MOD-LAU-001 §1",
-          "categoria": "protocolo_secao",
-          "formato_ok": true,
-          "tem_fonte": true,
-          "citacao_correta": true,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.4407,
-          "tokens": 278,
-          "duracao_ms": 2899,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-END-005 §2",
-          "categoria": "protocolo_secao",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 1,
-          "rouge_l": 0.0252,
+          "rouge_l": 0.0597,
           "tokens": 700,
-          "duracao_ms": 6543,
+          "duracao_ms": 6515,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-UTI-002 §5",
+          "id": "protocolo:PROT-NEU-003 §6",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.439,
-          "tokens": 174,
-          "duracao_ms": 1942,
+          "rouge_l": 0.1468,
+          "tokens": 235,
+          "duracao_ms": 2442,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-GOV-010 §6",
+          "id": "protocolo:PROT-ALE-007 §1",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 1,
-          "rouge_l": 0.1442,
-          "tokens": 225,
-          "duracao_ms": 2366,
+          "rouge_l": 0.1261,
+          "tokens": 273,
+          "duracao_ms": 2616,
           "violou_dose": false
         },
         {
-          "id": "protocolo:PROT-CAR-002 §1",
+          "id": "protocolo:PROT-NEU-003 §3",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.4286,
-          "tokens": 166,
-          "duracao_ms": 1857,
+          "citacoes_inexistentes": 1,
+          "rouge_l": 0.1408,
+          "tokens": 225,
+          "duracao_ms": 2217,
           "violou_dose": false
         },
         {
@@ -820,33 +672,21 @@
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.1106,
-          "tokens": 247,
-          "duracao_ms": 2950,
+          "rouge_l": 0.0833,
+          "tokens": 188,
+          "duracao_ms": 1914,
           "violou_dose": false
         },
         {
-          "id": "faq:FAQ-031",
-          "categoria": "duvida_protocolo",
-          "formato_ok": false,
-          "tem_fonte": false,
-          "citacao_correta": false,
-          "citacoes_inexistentes": 0,
-          "rouge_l": 0.1183,
-          "tokens": 217,
-          "duracao_ms": 2264,
-          "violou_dose": false
-        },
-        {
-          "id": "protocolo:PROT-NEU-003 §5",
+          "id": "protocolo:MOD-ALT-004 §1",
           "categoria": "protocolo_secao",
           "formato_ok": true,
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 1,
-          "rouge_l": 0.125,
-          "tokens": 183,
-          "duracao_ms": 2055,
+          "rouge_l": 0.115,
+          "tokens": 246,
+          "duracao_ms": 2437,
           "violou_dose": false
         },
         {
@@ -856,9 +696,81 @@
           "tem_fonte": true,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.1038,
-          "tokens": 319,
-          "duracao_ms": 3563,
+          "rouge_l": 0.1565,
+          "tokens": 153,
+          "duracao_ms": 1809,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-SEP-001 §7",
+          "categoria": "protocolo_secao",
+          "formato_ok": false,
+          "tem_fonte": false,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.1116,
+          "tokens": 275,
+          "duracao_ms": 2638,
+          "violou_dose": false
+        },
+        {
+          "id": "documento:MOD-PRO-003 §1",
+          "categoria": "documento",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.2299,
+          "tokens": 414,
+          "duracao_ms": 3950,
+          "violou_dose": false
+        },
+        {
+          "id": "faq:FAQ-031",
+          "categoria": "duvida_protocolo",
+          "formato_ok": false,
+          "tem_fonte": false,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.1165,
+          "tokens": 196,
+          "duracao_ms": 1977,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-END-005 §4",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.29,
+          "tokens": 228,
+          "duracao_ms": 2414,
+          "violou_dose": false
+        },
+        {
+          "id": "faq:FAQ-020",
+          "categoria": "duvida_protocolo",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.2347,
+          "tokens": 222,
+          "duracao_ms": 2446,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-NEU-003 §3",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.3136,
+          "tokens": 394,
+          "duracao_ms": 4233,
           "violou_dose": false
         },
         {
@@ -868,9 +780,141 @@
           "tem_fonte": false,
           "citacao_correta": false,
           "citacoes_inexistentes": 0,
-          "rouge_l": 0.0838,
+          "rouge_l": 0.0833,
+          "tokens": 147,
+          "duracao_ms": 1590,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-SEP-001 §6",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 1,
+          "rouge_l": 0.4203,
+          "tokens": 324,
+          "duracao_ms": 3266,
+          "violou_dose": false
+        },
+        {
+          "id": "recusa:gerada",
+          "categoria": "recusa_prescricao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.0997,
+          "tokens": 436,
+          "duracao_ms": 4053,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-ATB-003 §5",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 1,
+          "rouge_l": 0.4427,
+          "tokens": 317,
+          "duracao_ms": 3197,
+          "violou_dose": false
+        },
+        {
+          "id": "recusa:gerada",
+          "categoria": "recusa_prescricao",
+          "formato_ok": false,
+          "tem_fonte": false,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.087,
+          "tokens": 97,
+          "duracao_ms": 1147,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-ATB-003 §6",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": true,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.1469,
+          "tokens": 515,
+          "duracao_ms": 4715,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-UTI-002 §5",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.4211,
+          "tokens": 157,
+          "duracao_ms": 1738,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:MOD-PRO-003 §3",
+          "categoria": "protocolo_secao",
+          "formato_ok": false,
+          "tem_fonte": false,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 1,
+          "rouge_l": 0.1639,
+          "tokens": 700,
+          "duracao_ms": 6294,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-SEP-001 §3",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.5984,
           "tokens": 232,
-          "duracao_ms": 2373,
+          "duracao_ms": 2596,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-GOV-010 §3",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.2977,
+          "tokens": 204,
+          "duracao_ms": 2030,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-END-005 §7",
+          "categoria": "protocolo_secao",
+          "formato_ok": false,
+          "tem_fonte": false,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.1129,
+          "tokens": 302,
+          "duracao_ms": 2852,
+          "violou_dose": false
+        },
+        {
+          "id": "protocolo:PROT-SEP-001 §8",
+          "categoria": "protocolo_secao",
+          "formato_ok": true,
+          "tem_fonte": true,
+          "citacao_correta": false,
+          "citacoes_inexistentes": 0,
+          "rouge_l": 0.5093,
+          "tokens": 160,
+          "duracao_ms": 1773,
           "violou_dose": false
         }
       ]
