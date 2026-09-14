@@ -82,12 +82,9 @@ def montar_configuracao(
         "steps_per_report": 20,
         "steps_per_eval": 50,
         "adapter_path": str(adaptador),
-        "save_every": 100,
+        "save_every": 50,
         "max_seq_length": max_seq,
         "grad_checkpoint": True,
-        # Calcula a perda apenas sobre os tokens da resposta. Sem isso, o modelo
-        # gastaria capacidade aprendendo a reproduzir o prompt de sistema e o
-        # contexto recuperado, que ja sao dados de entrada.
         "mask_prompt": True,
         "seed": semente,
         "lora_parameters": {"rank": rank, "scale": escala, "dropout": 0.05},
@@ -123,9 +120,6 @@ def treinar_mlx(configuracao: dict[str, Any], caminho_config: Path,
     return {"duracao_segundos": round(duracao, 1), "metricas": extrair_metricas(linhas)}
 
 
-# Cada metrica do log do mlx_lm aparece como "<rotulo> <numero>", separadas por
-# virgula, e a mesma linha pode conter varias. Regex nomeada evita a ordem de
-# ifs que ja mascarou a leitura da perda de validacao.
 _METRICAS_LOG = {
     "iteracao": re.compile(r"\bIter\s+(\d+)"),
     "perda_treino": re.compile(r"\bTrain loss\s+([\d.]+)"),
@@ -178,6 +172,33 @@ def extrair_metricas(linhas: list[str]) -> dict[str, Any]:
     return resumo
 
 
+def promover_melhor_checkpoint(adaptador: Path, metricas: dict[str, Any]) -> dict[str, Any]:
+    """Entrega o checkpoint de menor perda de validacao, nao o da ultima iteracao.
+
+    Com poucos exemplos o sobreajuste comeca antes do fim do treino, e a ultima
+    iteracao costuma ser pior que o melhor ponto da curva. Como ``save_every``
+    esta alinhado com ``steps_per_eval``, todo ponto avaliado tem um checkpoint
+    correspondente e o melhor pode ser promovido a adaptador oficial.
+    """
+    melhor_iteracao = metricas.get("melhor_iteracao")
+    entregue = adaptador / "adapters.safetensors"
+    if melhor_iteracao is None or not entregue.exists():
+        return {"checkpoint_entregue": "ultima_iteracao", "selecao": "indisponivel"}
+
+    iteracao = int(melhor_iteracao)
+    candidato = adaptador / f"{iteracao:07d}_adapters.safetensors"
+    if not candidato.exists():
+        return {"checkpoint_entregue": "ultima_iteracao",
+                "selecao": f"sem checkpoint para a iteracao {iteracao}"}
+
+    entregue.write_bytes(candidato.read_bytes())
+    return {
+        "checkpoint_entregue": iteracao,
+        "perda_validacao_entregue": metricas.get("melhor_perda_validacao"),
+        "selecao": "menor perda de validacao",
+    }
+
+
 def treinar_peft(configuracao: dict[str, Any]) -> dict[str, Any]:
     """Treinamento equivalente em GPU NVIDIA, com transformers + peft + trl."""
     from .backend_peft import treinar as treinar_com_peft
@@ -228,8 +249,11 @@ def main() -> None:
     else:
         resultado = treinar_peft(configuracao)
 
+    selecao = promover_melhor_checkpoint(args.adaptador, resultado.get("metricas", {}))
+
     metadados = {
         "concluido_em": datetime.now().isoformat(timespec="seconds"),
+        "selecao_checkpoint": selecao,
         "backend": args.backend,
         "modelo_base": modelo,
         "hiperparametros": {
@@ -248,6 +272,9 @@ def main() -> None:
         primeira = metricas["validacao"][0].get("perda_validacao")
         ultima = metricas["validacao"][-1].get("perda_validacao")
         print(f"Perda de validacao: {primeira} -> {ultima}")
+    if isinstance(selecao.get("checkpoint_entregue"), int):
+        print(f"Checkpoint entregue: iteracao {selecao['checkpoint_entregue']} "
+              f"(val loss {selecao['perda_validacao_entregue']})")
     print(f"Treino concluido em {resultado.get('duracao_segundos')}s")
     print(f"Adaptador salvo em {args.adaptador}")
     print(f"Metadados: {destino}")
