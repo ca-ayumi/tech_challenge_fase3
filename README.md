@@ -270,7 +270,7 @@ Textos livres passam pelo anonimizador **antes** de serem gravados: a trilha gua
 
 ### Explicabilidade
 
-Toda resposta indica a origem de cada afirmação — identificador do protocolo e seção, ou campo do prontuário. Além disso, o sistema **confere se cada referência citada estava realmente entre os documentos recuperados**:
+Toda resposta indica a origem de cada afirmação, identificador do protocolo e seção, ou campo do prontuário. Além disso, o sistema **confere se cada referência citada estava realmente entre os documentos recuperados**:
 
 ```
 #### Base da resposta
