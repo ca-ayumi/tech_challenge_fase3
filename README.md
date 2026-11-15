@@ -344,7 +344,6 @@ Análise completa em [`docs/RELATORIO_TECNICO.md`](./docs/RELATORIO_TECNICO.md);
 | Documento | Conteúdo |
 |---|---|
 | [Relatório técnico](./docs/RELATORIO_TECNICO.md) | Decisões de arquitetura, processo de fine-tuning, avaliação e limitações |
-| [Roteiro do vídeo](./docs/ROTEIRO_VIDEO.md) | Divisão dos 15 minutos, comandos e pontos a destacar |
 | [Diagramas](./docs/diagramas/) | Fluxo LangGraph (gerado pelo grafo), arquitetura e pipeline de dados |
 | [Notebook Colab](./notebooks/finetuning_colab.ipynb) | Fine-tuning em GPU NVIDIA, mesmo dataset |
 
