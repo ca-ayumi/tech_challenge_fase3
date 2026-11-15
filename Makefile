@@ -1,4 +1,5 @@
-.PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar
+.PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar \
+	baixar-dados azure monitorar avaliar-anomalias
 
 PY := .venv/bin/python
 PIP := .venv/bin/pip
@@ -14,6 +15,12 @@ ajuda:
 	@echo "  lint       Roda o ruff"
 	@echo "  app        Sobe a interface Streamlit"
 	@echo "  perguntar  Ex.: make perguntar P='Ha pendencia no leito PS-07?'"
+	@echo ""
+	@echo "Fase 4 - monitoramento multimodal:"
+	@echo "  baixar-dados       Baixa BIDMC e UR Fall (PhysioNet / Univ. de Rzeszow)"
+	@echo "  azure              Verifica as credenciais Azure (Speech e Language)"
+	@echo "  monitorar          Simula 24 h de monitoramento com alertas (A=3600 acelera)"
+	@echo "  avaliar-anomalias  Avalia os detectores e grava avaliacao/resultados/anomalias.md"
 
 instalar:
 	python3.11 -m venv .venv
@@ -48,3 +55,15 @@ perguntar:
 
 limpar:
 	rm -rf .pytest_cache .ruff_cache **/__pycache__ logs/*.log logs/*.jsonl
+
+baixar-dados:
+	$(PY) scripts/baixar_datasets.py --todos
+
+azure:
+	$(PY) -m assistente_medico.cli azure
+
+monitorar:
+	$(PY) -m assistente_medico.cli monitorar simular --horas 24 --aceleracao $(or $(A),0)
+
+avaliar-anomalias:
+	$(PY) -m assistente_medico.cli monitorar avaliar

@@ -502,6 +502,14 @@ class BancoHospital:
                  perfil, prontuario, json.dumps(conteudo, ensure_ascii=False, default=str)),
             )
 
+    def limpar_monitoramento(self) -> int:
+        """Apaga anomalias, analises e alertas do monitoramento (para reproduzir uma simulacao)."""
+        with self.conectar() as conexao:
+            conexao.execute("DELETE FROM anomalias")
+            conexao.execute("DELETE FROM analises")
+            cursor = conexao.execute("DELETE FROM alertas WHERE categoria LIKE 'anomalia_%'")
+            return cursor.rowcount
+
     def reconhecer_alerta(self, alerta_id: int) -> bool:
         """Marca o alerta como reconhecido pela equipe. Devolve False se nao estava aberto."""
         with self.conectar() as conexao:
@@ -510,6 +518,24 @@ class BancoHospital:
                 (alerta_id,),
             )
             return cursor.rowcount > 0
+
+    def registrar_sinais_vitais(self, leituras: list[dict[str, Any]]) -> int:
+        with self.conectar() as conexao:
+            conexao.executemany(
+                """INSERT INTO sinais_vitais
+                   (prontuario, aferido_em, pas, pad, fc, fr, temperatura, saturacao, glasgow)
+                   VALUES (?,?,?,?,?,?,?,?,?)""",
+                [
+                    (s["prontuario"], s["aferido_em"], s.get("pas"), s.get("pad"), s.get("fc"),
+                     s.get("fr"), s.get("temperatura"), s.get("saturacao"), s.get("glasgow"))
+                    for s in leituras
+                ],
+            )
+        return len(leituras)
+
+    def serie_sinais_vitais(self, prontuario: str) -> list[dict[str, Any]]:
+        return self._consultar(
+            "SELECT * FROM sinais_vitais WHERE prontuario = ? ORDER BY aferido_em", (prontuario,))
 
     def registrar_prescricoes(self, prescricoes: list[dict[str, Any]]) -> int:
         with self.conectar() as conexao:
@@ -641,6 +667,7 @@ def carregar_prontuarios_brutos(caminho: Path | None = None) -> list[dict[str, A
 def preparar_banco(caminho: Path | None = None, forcar: bool = False) -> BancoHospital:
     """Garante um banco populado, criando-o a partir dos prontuarios sinteticos."""
     banco = BancoHospital(caminho)
+    banco.criar_esquema()
     if forcar or not banco.existe():
         banco.popular(carregar_prontuarios_brutos())
     return banco

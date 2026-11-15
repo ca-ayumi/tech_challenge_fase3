@@ -1,0 +1,359 @@
+{
+  "gerado_em": "2026-11-15T19:29:55",
+  "internacao": {
+    "dataset": "internacao sintetica (12 pacientes, ate 72 h)",
+    "por_modalidade": {
+      "sinais_vitais": {
+        "eventos_rotulados": 3,
+        "detectados": 3,
+        "anomalias_fora_de_rotulo": 0
+      },
+      "prescricao": {
+        "eventos_rotulados": 8,
+        "detectados": 8,
+        "anomalias_fora_de_rotulo": 0
+      },
+      "movimentacao": {
+        "eventos_rotulados": 3,
+        "detectados": 3,
+        "anomalias_fora_de_rotulo": 0
+      }
+    },
+    "eventos": [
+      {
+        "prontuario": "559120",
+        "modalidade": "sinais_vitais",
+        "evento": "insuficiencia_respiratoria",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 7.0,
+        "tipos_detectados": [
+          "desvio_basal_fc",
+          "desvio_basal_fr",
+          "desvio_basal_saturacao",
+          "news2_elevado",
+          "parametro_critico_fr",
+          "parametro_critico_saturacao",
+          "tendencia_fr",
+          "tendencia_saturacao"
+        ]
+      },
+      {
+        "prontuario": "443902",
+        "modalidade": "sinais_vitais",
+        "evento": "deterioracao_septica",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 7.0,
+        "tipos_detectados": [
+          "desvio_basal_fc",
+          "desvio_basal_fr",
+          "desvio_basal_pas",
+          "desvio_basal_temperatura",
+          "news2_elevado",
+          "padrao_multivariado",
+          "tendencia_fc",
+          "tendencia_pas",
+          "tendencia_temperatura"
+        ]
+      },
+      {
+        "prontuario": "310445",
+        "modalidade": "sinais_vitais",
+        "evento": "febre_apos_suspensao",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 4.0,
+        "tipos_detectados": [
+          "desvio_basal_fc",
+          "desvio_basal_temperatura",
+          "padrao_multivariado",
+          "tendencia_fc",
+          "tendencia_temperatura"
+        ]
+      },
+      {
+        "prontuario": "559120",
+        "modalidade": "prescricao",
+        "evento": "alergia_penicilina",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "conflito_alergia"
+        ]
+      },
+      {
+        "prontuario": "443902",
+        "modalidade": "prescricao",
+        "evento": "dose_10x",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "acima_referencia",
+          "salto_dose"
+        ]
+      },
+      {
+        "prontuario": "208731",
+        "modalidade": "prescricao",
+        "evento": "insulina_10x",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "salto_dose"
+        ]
+      },
+      {
+        "prontuario": "208731",
+        "modalidade": "movimentacao",
+        "evento": "imobilidade",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 3.0,
+        "tipos_detectados": [
+          "imobilidade_prolongada"
+        ]
+      },
+      {
+        "prontuario": "117256",
+        "modalidade": "prescricao",
+        "evento": "duplo_anticoagulante",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "duplicidade_terapeutica"
+        ]
+      },
+      {
+        "prontuario": "310445",
+        "modalidade": "prescricao",
+        "evento": "suspensao_antimicrobiano",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "suspensao_sem_substituto"
+        ]
+      },
+      {
+        "prontuario": "624190",
+        "modalidade": "prescricao",
+        "evento": "alergia_morfina",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "conflito_alergia"
+        ]
+      },
+      {
+        "prontuario": "662480",
+        "modalidade": "prescricao",
+        "evento": "suspensao_insulina",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "suspensao_sem_substituto"
+        ]
+      },
+      {
+        "prontuario": "990117",
+        "modalidade": "prescricao",
+        "evento": "alergia_dipirona",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.0,
+        "tipos_detectados": [
+          "conflito_alergia"
+        ]
+      },
+      {
+        "prontuario": "875431",
+        "modalidade": "movimentacao",
+        "evento": "agitacao",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 1.8,
+        "tipos_detectados": [
+          "agitacao_noturna"
+        ]
+      },
+      {
+        "prontuario": "875431",
+        "modalidade": "movimentacao",
+        "evento": "saida_noturna",
+        "detectado": true,
+        "antecedencia_ate_fim_h": 0.2,
+        "tipos_detectados": [
+          "saida_leito_noturna"
+        ]
+      }
+    ],
+    "anomalias_fora_de_rotulo": []
+  },
+  "quedas": {
+    "dataset": "UR Fall Detection (acelerometro)",
+    "particoes": {
+      "calibracao (impares)": {
+        "quedas": 15,
+        "atividades": 20,
+        "sensibilidade": 1.0,
+        "especificidade": 0.9,
+        "vp": 15,
+        "fn": 0,
+        "fp": 2,
+        "vn": 18,
+        "erros": [
+          "adl-31",
+          "adl-33"
+        ]
+      },
+      "teste (pares)": {
+        "quedas": 15,
+        "atividades": 20,
+        "sensibilidade": 0.933,
+        "especificidade": 0.95,
+        "vp": 14,
+        "fn": 1,
+        "fp": 1,
+        "vn": 19,
+        "erros": [
+          "adl-40",
+          "fall-10"
+        ]
+      }
+    }
+  },
+  "sinais_vitais_bidmc": {
+    "dataset": "PhysioNet BIDMC (1 Hz)",
+    "registros": 53,
+    "horas_monitoradas": 7.07,
+    "semente": 42,
+    "configuracoes": {
+      "limiar (NEWS2)": {
+        "camadas": [
+          "limiar"
+        ],
+        "sensibilidade_geral": 0.613,
+        "por_evento": {
+          "dessaturacao": {
+            "sensibilidade": 0.717,
+            "latencia_mediana_s": 80.4
+          },
+          "taquicardia": {
+            "sensibilidade": 0.321,
+            "latencia_mediana_s": 56.0
+          },
+          "taquipneia": {
+            "sensibilidade": 0.925,
+            "latencia_mediana_s": 71.2
+          },
+          "piora_combinada": {
+            "sensibilidade": 0.491,
+            "latencia_mediana_s": 78.1
+          }
+        },
+        "alertas_sem_injecao_por_hora": 1.42,
+        "registros_sem_injecao_com_alerta": 8,
+        "alertas_sem_injecao_por_camada": {
+          "news2": 10
+        },
+        "artefatos_que_viraram_alarme": "0/53"
+      },
+      "+ linha de base": {
+        "camadas": [
+          "basal",
+          "limiar"
+        ],
+        "sensibilidade_geral": 0.943,
+        "por_evento": {
+          "dessaturacao": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 59.5
+          },
+          "taquicardia": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 38.8
+          },
+          "taquipneia": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 61.8
+          },
+          "piora_combinada": {
+            "sensibilidade": 0.774,
+            "latencia_mediana_s": 82.6
+          }
+        },
+        "alertas_sem_injecao_por_hora": 1.56,
+        "registros_sem_injecao_com_alerta": 9,
+        "alertas_sem_injecao_por_camada": {
+          "news2": 10,
+          "zscore_robusto": 1
+        },
+        "artefatos_que_viraram_alarme": "0/53"
+      },
+      "+ tendencia": {
+        "camadas": [
+          "basal",
+          "limiar",
+          "tendencia"
+        ],
+        "sensibilidade_geral": 0.995,
+        "por_evento": {
+          "dessaturacao": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 53.6
+          },
+          "taquicardia": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 38.8
+          },
+          "taquipneia": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 58.4
+          },
+          "piora_combinada": {
+            "sensibilidade": 0.981,
+            "latencia_mediana_s": 82.8
+          }
+        },
+        "alertas_sem_injecao_por_hora": 2.83,
+        "registros_sem_injecao_com_alerta": 14,
+        "alertas_sem_injecao_por_camada": {
+          "news2": 10,
+          "tendencia_linear": 9,
+          "zscore_robusto": 1
+        },
+        "artefatos_que_viraram_alarme": "0/53"
+      },
+      "+ Isolation Forest": {
+        "camadas": [
+          "basal",
+          "limiar",
+          "multivariado",
+          "tendencia"
+        ],
+        "sensibilidade_geral": 1.0,
+        "por_evento": {
+          "dessaturacao": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 53.6
+          },
+          "taquicardia": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 38.8
+          },
+          "taquipneia": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 57.7
+          },
+          "piora_combinada": {
+            "sensibilidade": 1.0,
+            "latencia_mediana_s": 78.2
+          }
+        },
+        "alertas_sem_injecao_por_hora": 3.54,
+        "registros_sem_injecao_com_alerta": 17,
+        "alertas_sem_injecao_por_camada": {
+          "news2": 10,
+          "isolation_forest": 5,
+          "tendencia_linear": 9,
+          "zscore_robusto": 1
+        },
+        "artefatos_que_viraram_alarme": "0/53"
+      }
+    }
+  }
+}
