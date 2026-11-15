@@ -7,6 +7,7 @@ o cabecalho Retry-After quando presente.
 
 from __future__ import annotations
 
+import http.client
 import json
 import time
 import urllib.error
@@ -61,7 +62,8 @@ def requisitar(metodo: str, url: str, chave: str, corpo: Any = None,
                 dormir(float(espera) if espera and espera.isdigit() else 2.0 ** tentativa)
                 continue
             raise ErroAzure(f"HTTP {erro.code}: {detalhe}", status=erro.code) from erro
-        except (urllib.error.URLError, TimeoutError) as erro:
+        except (urllib.error.URLError, TimeoutError, ConnectionError,
+                http.client.IncompleteRead) as erro:
             if tentativa < tentativas:
                 dormir(2.0 ** tentativa)
                 continue

@@ -49,6 +49,16 @@ def _urfall_acelerometro() -> list[tuple[str, str]]:
     return quedas + atividades
 
 
+def _voiced() -> list[tuple[str, str]]:
+    base = "https://physionet.org/files/voiced/1.0.0"
+    arquivos = []
+    for i in range(1, 209):
+        nome = f"voice{i:03d}"
+        arquivos += [(f"{base}/{nome}.hea", f"{nome}.hea"), (f"{base}/{nome}.dat", f"{nome}.dat"),
+                     (f"{base}/{nome}-info.txt", f"{nome}-info.txt")]
+    return arquivos
+
+
 DATASETS = {
     "bidmc": Dataset(
         nome="bidmc",
@@ -72,6 +82,17 @@ DATASETS = {
                 "maps and wireless accelerometer. Comput Methods Programs Biomed. "
                 "2014;117(3):489-501.",
         arquivos=_urfall_acelerometro,
+    ),
+    "voiced": Dataset(
+        nome="voiced",
+        descricao="VOICED: 208 gravacoes da vogal /a/ sustentada (8 kHz), 57 vozes saudaveis "
+                  "e 151 com patologia vocal diagnosticada.",
+        origem="https://physionet.org/content/voiced/1.0.0/",
+        licenca="Open Data Commons Attribution License v1.0 (ODC-By)",
+        citacao="Cesari U, De Pietro G, Marciano E, Niri C, Sannino G, Verde L. A new database "
+                "of healthy and pathological voices. Computers & Electrical Engineering. "
+                "2018;68:310-321.",
+        arquivos=_voiced,
     ),
 }
 

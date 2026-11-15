@@ -1,5 +1,5 @@
 .PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar \
-	baixar-dados azure monitorar avaliar-anomalias
+	baixar-dados azure monitorar avaliar-anomalias audio-gerar audio-consultas avaliar-audio
 
 PY := .venv/bin/python
 PIP := .venv/bin/pip
@@ -21,6 +21,9 @@ ajuda:
 	@echo "  azure              Verifica as credenciais Azure (Speech e Language)"
 	@echo "  monitorar          Simula 24 h de monitoramento com alertas (A=3600 acelera)"
 	@echo "  avaliar-anomalias  Avalia os detectores e grava avaliacao/resultados/anomalias.md"
+	@echo "  audio-gerar        Sintetiza as consultas de exemplo (Azure Text to Speech)"
+	@echo "  audio-consultas    Analisa as consultas: voz, transcricao, termos criticos, alertas"
+	@echo "  avaliar-audio      Avalia a analise de audio e grava avaliacao/resultados/audio.md"
 
 instalar:
 	python3.11 -m venv .venv
@@ -67,3 +70,12 @@ monitorar:
 
 avaliar-anomalias:
 	$(PY) -m assistente_medico.cli monitorar avaliar
+
+audio-gerar:
+	$(PY) -m assistente_medico.cli audio gerar
+
+audio-consultas:
+	$(PY) -m assistente_medico.cli audio consultas
+
+avaliar-audio:
+	$(PY) -m assistente_medico.cli audio avaliar

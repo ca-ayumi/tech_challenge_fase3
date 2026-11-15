@@ -20,6 +20,7 @@ streamlit = "^1.36"
 rich = "^13.7"
 numpy = ">=1.26"
 scikit-learn = "^1.5"
+praat-parselmouth = ">=0.4.4"
 
 [tool.poetry.group.treino.dependencies]
 mlx-lm = { version = "^0.20", markers = "sys_platform == 'darwin' and platform_machine == 'arm64'" }
