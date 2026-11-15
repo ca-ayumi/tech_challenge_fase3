@@ -39,7 +39,9 @@ lint:
 	.venv/bin/ruff check assistente_medico tests scripts
 
 app:
-	.venv/bin/streamlit run assistente_medico/app/streamlit_app.py
+	.venv/bin/streamlit run assistente_medico/app/streamlit_app.py \
+		--server.fileWatcherType none \
+		--browser.gatherUsageStats false
 
 perguntar:
 	$(PY) -m assistente_medico.cli perguntar "$(P)" --explicar

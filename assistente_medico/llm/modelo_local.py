@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
@@ -86,8 +87,16 @@ class ModeloMLX:
                 caminho_adaptador,
             )
 
+        # Toda chamada ao MLX acontece num unico thread dedicado, carga e geracao.
+        # O mlx amarra os streams ao thread que os criou e o Streamlit roda cada
+        # rerun num thread novo; gerar fora do thread da carga quebra com
+        # "There is no Stream(cpu, 0) in current thread".
+        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx-gerador")
+
         inicio = time.perf_counter()
-        self._modelo, self._tokenizador = load(self.nome, adapter_path=self.adaptador)
+        self._modelo, self._tokenizador = self._executor.submit(
+            load, self.nome, adapter_path=self.adaptador
+        ).result()
         logger.info(
             "Modelo %s carregado em %.1fs (adaptador: %s)",
             self.nome, time.perf_counter() - inicio, self.adaptador or "nenhum",
@@ -104,10 +113,10 @@ class ModeloMLX:
         amostrador = self._make_sampler(temp=temperatura, top_p=top_p)
 
         inicio = time.perf_counter()
-        texto = self._generate(
-            self._modelo, self._tokenizador, prompt=prompt,
+        texto = self._executor.submit(
+            self._generate, self._modelo, self._tokenizador, prompt=prompt,
             max_tokens=max_tokens, sampler=amostrador, verbose=False,
-        )
+        ).result()
         duracao = int((time.perf_counter() - inicio) * 1000)
         tokens = len(self._tokenizador.encode(texto))
         return RespostaModelo(
