@@ -5,7 +5,8 @@ Subcomandos:
     preparar     Gera prontuarios, dataset e banco a partir dos dados brutos.
     perguntar    Faz uma pergunta ao assistente, pelo fluxo completo.
     paciente     Mostra o contexto e as pendencias de um paciente.
-    alertas      Lista os alertas abertos no painel institucional.
+    alertas      Lista os alertas abertos no painel institucional, ou reconhece um.
+    azure        Verifica as credenciais dos servicos Azure (Speech e Language).
     validacoes   Lista e decide os pedidos de validacao humana pendentes.
     auditoria    Mostra a trilha de uma interacao.
     politicas    Lista as politicas de seguranca vigentes.
@@ -143,6 +144,15 @@ def comando_paciente(args: argparse.Namespace) -> int:
 
 def comando_alertas(args: argparse.Namespace) -> int:
     banco = preparar_banco()
+    if args.reconhecer:
+        from .multimodal import CentralAlertas
+
+        central = CentralAlertas(banco, notificadores=[])
+        if not central.reconhecer(args.reconhecer, profissional=args.profissional):
+            print(f"Alerta #{args.reconhecer} nao encontrado ou ja reconhecido.")
+            return 1
+        print(f"Alerta #{args.reconhecer} reconhecido por {args.profissional}.")
+        return 0
     alertas = banco.listar_alertas(prontuario=args.prontuario, limite=args.limite)
     if not alertas:
         print("Nenhum alerta aberto.")
@@ -152,6 +162,22 @@ def comando_alertas(args: argparse.Namespace) -> int:
               f"prontuario {alerta['prontuario'] or '-':8s} {alerta['mensagem'][:90]}")
         print(f"{'':13s}fonte: {alerta['fonte']} | {alerta['criado_em']}")
     return 0
+
+
+def comando_azure(args: argparse.Namespace) -> int:
+    from .multimodal.azure import verificar_azure
+
+    falhas = 0
+    for status in verificar_azure():
+        if status.disponivel:
+            marca = "OK  "
+        elif status.configurado:
+            marca, falhas = "ERRO", falhas + 1
+        else:
+            marca = "--  "
+        latencia = f" ({status.latencia_ms} ms)" if status.latencia_ms is not None else ""
+        print(f"[{marca}] {status.servico:9s} {status.detalhe}{latencia}")
+    return 1 if falhas else 0
 
 
 def comando_validacoes(args: argparse.Namespace) -> int:
@@ -260,7 +286,13 @@ def construir_parser() -> argparse.ArgumentParser:
     alertas = subparsers.add_parser("alertas", help="Alertas abertos.")
     alertas.add_argument("--prontuario", default=None)
     alertas.add_argument("--limite", type=int, default=30)
+    alertas.add_argument("--reconhecer", type=int, default=None, metavar="ID",
+                         help="Marca o alerta como reconhecido pela equipe.")
+    alertas.add_argument("--profissional", default="nao identificado")
     alertas.set_defaults(funcao=comando_alertas)
+
+    azure = subparsers.add_parser("azure", help="Verifica as credenciais dos servicos Azure.")
+    azure.set_defaults(funcao=comando_azure)
 
     validacoes = subparsers.add_parser("validacoes", help="Validacoes humanas.")
     validacoes.add_argument("--status-filtro", default="pendente")

@@ -61,9 +61,13 @@ class Caminhos:
     adaptador: Path = field(default_factory=lambda: _caminho("DIR_ADAPTADOR", "modelos/adaptador-lora"))
     logs: Path = field(default_factory=lambda: _caminho("DIR_LOGS", "logs"))
     avaliacao: Path = field(default_factory=lambda: _caminho("DIR_AVALIACAO", "avaliacao/resultados"))
+    multimodal: Path = field(
+        default_factory=lambda: _caminho("DIR_DADOS_MULTIMODAIS", "dados/multimodal")
+    )
 
     def garantir(self) -> None:
-        for destino in (self.dados_processados, self.modelos, self.logs, self.avaliacao):
+        for destino in (self.dados_processados, self.modelos, self.logs, self.avaliacao,
+                        self.multimodal):
             destino.mkdir(parents=True, exist_ok=True)
         self.banco.parent.mkdir(parents=True, exist_ok=True)
 
@@ -115,11 +119,46 @@ class ConfigSeguranca:
     retencao_auditoria_anos: int = _inteiro("RETENCAO_AUDITORIA_ANOS", 5)
 
 
+@dataclass(frozen=True)
+class ConfigAzure:
+    """Credenciais dos servicos cognitivos da Azure (Speech e Language).
+
+    Sem credencial, os modulos multimodais usam o backend offline, o que
+    mantem testes e CI rodando sem rede.
+    """
+
+    chave_fala: str = os.getenv("AZURE_SPEECH_KEY", "").strip()
+    regiao_fala: str = os.getenv("AZURE_SPEECH_REGION", "").strip()
+    chave_linguagem: str = os.getenv("AZURE_LANGUAGE_KEY", "").strip()
+    endpoint_linguagem: str = os.getenv("AZURE_LANGUAGE_ENDPOINT", "").strip().rstrip("/")
+    idioma: str = os.getenv("AZURE_IDIOMA", "pt-BR")
+    timeout_s: float = _decimal("AZURE_TIMEOUT", 30.0)
+
+    @property
+    def fala_configurada(self) -> bool:
+        return bool(self.chave_fala and self.regiao_fala)
+
+    @property
+    def linguagem_configurada(self) -> bool:
+        return bool(self.chave_linguagem and self.endpoint_linguagem)
+
+
+@dataclass(frozen=True)
+class ConfigMonitoramento:
+    """Politica de emissao de alertas do monitoramento multimodal."""
+
+    severidade_minima_alerta: str = os.getenv("SEVERIDADE_MINIMA_ALERTA", "moderada")
+    janela_supressao_min: int = _inteiro("JANELA_SUPRESSAO_ALERTA_MIN", 30)
+    webhook_alertas: str = os.getenv("WEBHOOK_ALERTAS", "").strip()
+
+
 CAMINHOS = Caminhos()
 MODELO = ConfigModelo()
 TREINO = ConfigTreino()
 RECUPERACAO = ConfigRecuperacao()
 SEGURANCA = ConfigSeguranca()
+AZURE = ConfigAzure()
+MONITORAMENTO = ConfigMonitoramento()
 
 SEMENTE = TREINO.semente
 

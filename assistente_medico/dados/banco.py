@@ -143,7 +143,63 @@ CREATE TABLE IF NOT EXISTS auditoria (
     conteudo    TEXT
 );
 
+CREATE TABLE IF NOT EXISTS prescricoes (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    prontuario       TEXT NOT NULL,
+    medicamento      TEXT NOT NULL,
+    dose             REAL,
+    unidade          TEXT,
+    via              TEXT,
+    intervalo_horas  REAL,
+    prescrito_em     TEXT NOT NULL,
+    prescritor       TEXT,
+    situacao         TEXT NOT NULL DEFAULT 'ativa'
+                     CHECK (situacao IN ('ativa', 'suspensa', 'substituida')),
+    FOREIGN KEY (prontuario) REFERENCES pacientes (prontuario)
+);
+
+CREATE TABLE IF NOT EXISTS movimentacao (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    prontuario    TEXT NOT NULL,
+    registrado_em TEXT NOT NULL,
+    atividade     REAL,
+    posicao       TEXT,
+    fonte         TEXT,
+    FOREIGN KEY (prontuario) REFERENCES pacientes (prontuario)
+);
+
+CREATE TABLE IF NOT EXISTS analises (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    prontuario   TEXT,
+    modalidade   TEXT NOT NULL,
+    origem       TEXT,
+    iniciada_em  TEXT NOT NULL,
+    concluida_em TEXT,
+    resumo       TEXT
+);
+
+CREATE TABLE IF NOT EXISTS anomalias (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    analise_id   INTEGER,
+    prontuario   TEXT,
+    modalidade   TEXT NOT NULL,
+    tipo         TEXT NOT NULL,
+    severidade   TEXT NOT NULL,
+    escore       REAL,
+    descricao    TEXT NOT NULL,
+    inicio       TEXT,
+    fim          TEXT,
+    detector     TEXT,
+    evidencias   TEXT,
+    alerta_id    INTEGER,
+    detectada_em TEXT NOT NULL,
+    FOREIGN KEY (analise_id) REFERENCES analises (id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_exames_prontuario ON exames (prontuario, status);
+CREATE INDEX IF NOT EXISTS idx_prescricoes_prontuario ON prescricoes (prontuario, medicamento, prescrito_em);
+CREATE INDEX IF NOT EXISTS idx_movimentacao_prontuario ON movimentacao (prontuario, registrado_em);
+CREATE INDEX IF NOT EXISTS idx_anomalias_prontuario ON anomalias (prontuario, tipo, alerta_id);
 CREATE INDEX IF NOT EXISTS idx_sinais_prontuario ON sinais_vitais (prontuario, aferido_em);
 CREATE INDEX IF NOT EXISTS idx_auditoria_interacao ON auditoria (interacao);
 CREATE INDEX IF NOT EXISTS idx_alertas_prontuario ON alertas (prontuario, status);
@@ -152,6 +208,7 @@ CREATE INDEX IF NOT EXISTS idx_alertas_prontuario ON alertas (prontuario, status
 TABELAS_CONSULTAVEIS = {
     "pacientes", "comorbidades", "alergias", "medicacoes", "sinais_vitais",
     "exames", "protocolos_ativos", "eventos", "evolucoes", "alertas",
+    "prescricoes", "movimentacao", "anomalias",
 }
 
 
@@ -193,7 +250,8 @@ class BancoHospital:
         self.criar_esquema()
         with self.conectar() as conexao:
             if limpar:
-                for tabela in ("evolucoes", "eventos", "protocolos_ativos", "exames",
+                for tabela in ("movimentacao", "prescricoes",
+                               "evolucoes", "eventos", "protocolos_ativos", "exames",
                                "sinais_vitais", "medicacoes", "alergias", "comorbidades",
                                "pacientes"):
                     conexao.execute(f"DELETE FROM {tabela}")
@@ -443,6 +501,127 @@ class BancoHospital:
                 (interacao, datetime.now().isoformat(timespec="seconds"), evento, usuario,
                  perfil, prontuario, json.dumps(conteudo, ensure_ascii=False, default=str)),
             )
+
+    def reconhecer_alerta(self, alerta_id: int) -> bool:
+        """Marca o alerta como reconhecido pela equipe. Devolve False se nao estava aberto."""
+        with self.conectar() as conexao:
+            cursor = conexao.execute(
+                "UPDATE alertas SET status = 'reconhecido' WHERE id = ? AND status = 'aberto'",
+                (alerta_id,),
+            )
+            return cursor.rowcount > 0
+
+    def registrar_prescricoes(self, prescricoes: list[dict[str, Any]]) -> int:
+        with self.conectar() as conexao:
+            conexao.executemany(
+                """INSERT INTO prescricoes
+                   (prontuario, medicamento, dose, unidade, via, intervalo_horas,
+                    prescrito_em, prescritor, situacao)
+                   VALUES (?,?,?,?,?,?,?,?,?)""",
+                [
+                    (p["prontuario"], p["medicamento"], p.get("dose"), p.get("unidade"),
+                     p.get("via"), p.get("intervalo_horas"), p["prescrito_em"],
+                     p.get("prescritor"), p.get("situacao", "ativa"))
+                    for p in prescricoes
+                ],
+            )
+        return len(prescricoes)
+
+    def prescricoes(self, prontuario: str) -> list[dict[str, Any]]:
+        return self._consultar(
+            "SELECT * FROM prescricoes WHERE prontuario = ? ORDER BY prescrito_em, id",
+            (prontuario,),
+        )
+
+    def registrar_movimentacao(self, registros: list[dict[str, Any]]) -> int:
+        with self.conectar() as conexao:
+            conexao.executemany(
+                """INSERT INTO movimentacao (prontuario, registrado_em, atividade, posicao, fonte)
+                   VALUES (?,?,?,?,?)""",
+                [
+                    (r["prontuario"], r["registrado_em"], r.get("atividade"), r.get("posicao"),
+                     r.get("fonte"))
+                    for r in registros
+                ],
+            )
+        return len(registros)
+
+    def movimentacao(self, prontuario: str, desde: str | None = None) -> list[dict[str, Any]]:
+        return self._consultar(
+            "SELECT * FROM movimentacao WHERE prontuario = ? AND registrado_em >= ? "
+            "ORDER BY registrado_em",
+            (prontuario, desde or ""),
+        )
+
+    def abrir_analise(self, modalidade: str, prontuario: str | None = None,
+                      origem: str | None = None) -> int:
+        with self.conectar() as conexao:
+            cursor = conexao.execute(
+                "INSERT INTO analises (prontuario, modalidade, origem, iniciada_em) VALUES (?,?,?,?)",
+                (prontuario, modalidade, origem, datetime.now().isoformat(timespec="seconds")),
+            )
+            return int(cursor.lastrowid)
+
+    def concluir_analise(self, analise_id: int, resumo: dict[str, Any]) -> None:
+        with self.conectar() as conexao:
+            conexao.execute(
+                "UPDATE analises SET concluida_em = ?, resumo = ? WHERE id = ?",
+                (datetime.now().isoformat(timespec="seconds"),
+                 json.dumps(resumo, ensure_ascii=False, default=str), analise_id),
+            )
+
+    def obter_analise(self, analise_id: int) -> dict[str, Any] | None:
+        linhas = self._consultar("SELECT * FROM analises WHERE id = ?", (analise_id,))
+        if not linhas:
+            return None
+        analise = linhas[0]
+        analise["resumo"] = json.loads(analise["resumo"]) if analise["resumo"] else None
+        return analise
+
+    def registrar_anomalia(self, anomalia: dict[str, Any], analise_id: int | None = None,
+                           alerta_id: int | None = None) -> int:
+        with self.conectar() as conexao:
+            cursor = conexao.execute(
+                """INSERT INTO anomalias
+                   (analise_id, prontuario, modalidade, tipo, severidade, escore, descricao,
+                    inicio, fim, detector, evidencias, alerta_id, detectada_em)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (analise_id, anomalia.get("prontuario"), anomalia["modalidade"],
+                 anomalia["tipo"], anomalia["severidade"], anomalia.get("escore"),
+                 anomalia["descricao"], anomalia.get("inicio"), anomalia.get("fim"),
+                 anomalia.get("detector"),
+                 json.dumps(anomalia.get("evidencias") or {}, ensure_ascii=False, default=str),
+                 alerta_id, datetime.now().isoformat(timespec="seconds")),
+            )
+            return int(cursor.lastrowid)
+
+    def ultima_anomalia_alertada(self, prontuario: str | None,
+                                 tipo: str) -> dict[str, Any] | None:
+        """Anomalia mais recente do mesmo tipo que gerou alerta, para supressao de repeticao."""
+        linhas = self._consultar(
+            "SELECT * FROM anomalias WHERE prontuario IS ? AND tipo = ? AND alerta_id IS NOT NULL "
+            "ORDER BY coalesce(fim, inicio, detectada_em) DESC, id DESC LIMIT 1",
+            (prontuario, tipo),
+        )
+        return linhas[0] if linhas else None
+
+    def listar_anomalias(self, prontuario: str | None = None, modalidade: str | None = None,
+                         analise_id: int | None = None,
+                         limite: int = 100) -> list[dict[str, Any]]:
+        condicoes, parametros = [], []
+        for coluna, valor in (("prontuario", prontuario), ("modalidade", modalidade),
+                              ("analise_id", analise_id)):
+            if valor is not None:
+                condicoes.append(f"{coluna} = ?")
+                parametros.append(valor)
+        where = f"WHERE {' AND '.join(condicoes)}" if condicoes else ""
+        linhas = self._consultar(
+            f"SELECT * FROM anomalias {where} ORDER BY id DESC LIMIT ?",
+            (*parametros, limite),
+        )
+        for linha in linhas:
+            linha["evidencias"] = json.loads(linha["evidencias"]) if linha["evidencias"] else {}
+        return linhas
 
     def trilha_auditoria(self, interacao: str | None = None,
                          limite: int = 100) -> list[dict[str, Any]]:
