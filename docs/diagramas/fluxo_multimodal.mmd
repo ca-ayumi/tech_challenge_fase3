@@ -1,0 +1,51 @@
+graph LR
+    subgraph fontes["Fontes de dados"]
+        SV["Monitor e afericoes<br/>sinais vitais"]
+        RX["Prontuario<br/>historico de prescricoes"]
+        MV["Sensor de leito<br/>e acelerometro"]
+        AU["Audio da consulta"]
+        VI["Video do quarto<br/>e da fisioterapia"]
+    end
+
+    subgraph local["Processamento local (hospital)"]
+        DSV["Sinais vitais<br/>NEWS2 + linha de base<br/>+ tendencia + Isolation Forest"]
+        DRX["Prescricoes<br/>alergia por grupo, dose 10x,<br/>duplicidade, suspensao"]
+        DMV["Movimentacao<br/>imobilidade, agitacao,<br/>saida noturna, queda"]
+        AC["Voz (Praat)<br/>ritmo, pausas, tom,<br/>jitter, shimmer, HNR"]
+        AN["Anonimizador<br/>pseudonimos antes da nuvem"]
+        YO["YOLOv8-pose + YOLOv8<br/>queda, exercicio,<br/>areas criticas"]
+    end
+
+    subgraph azure["Azure Cognitive Services"]
+        STT["Speech to Text<br/>tempo por palavra"]
+        TTS["Text to Speech<br/>consultas de exemplo"]
+        SEN["Language<br/>sentimento + opinioes"]
+        TAH["Text Analytics for Health<br/>sintomas com negacao"]
+    end
+
+    SV --> DSV
+    RX --> DRX
+    MV --> DMV
+    AU --> AC
+    AU --> STT --> AN --> SEN
+    AN --> TAH
+    VI --> YO
+    TTS -.-> AU
+
+    DSV --> A["Anomalia<br/>(contrato unico)"]
+    DRX --> A
+    DMV --> A
+    AC --> A
+    SEN --> A
+    TAH --> A
+    YO --> A
+
+    A --> CA["Central de alertas<br/>limiar, supressao de repeticao,<br/>agravamento, auditoria"]
+    A --> FU["Fusao tardia<br/>escore 0-100 por paciente<br/>+ 6 regras de correlacao"]
+    FU --> CA
+    CA --> N["Notificacao<br/>painel, arquivo, webhook Teams/Slack"]
+    N --> EQ["Equipe reconhece o alerta<br/>(registrado na auditoria)"]
+
+    BD[("SQLite<br/>anomalias, alertas,<br/>analises, auditoria")]
+    CA -.-> BD
+    FU -.-> BD

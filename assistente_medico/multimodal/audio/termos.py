@@ -150,10 +150,21 @@ def detectar_local(texto: str) -> list[Mencao]:
 
 
 def consolidar(mencoes: Iterable[Mencao]) -> list[Mencao]:
-    """Uma mencao por termo: a presente prevalece sobre a negada; Azure antes da local."""
+    """Uma mencao por termo: a presente prevalece sobre a negada; Azure antes da local.
+
+    A Azure as vezes devolve a entidade cortada ("dor no" de "dor no peito"); se o
+    detector local achou um trecho mais completo do mesmo termo, ele e usado.
+    """
+    mencoes = list(mencoes)
     escolhidas: dict[str, Mencao] = {}
     for mencao in mencoes:
         atual = escolhidas.get(mencao.termo.chave)
         if atual is None or (atual.negada and not mencao.negada):
             escolhidas[mencao.termo.chave] = mencao
+    for chave, escolhida in escolhidas.items():
+        mais_completa = max((m for m in mencoes if m.termo.chave == chave
+                             and m.negada == escolhida.negada), key=lambda m: len(m.trecho))
+        if len(mais_completa.trecho) > len(escolhida.trecho):
+            escolhidas[chave] = Mencao(escolhida.termo, mais_completa.trecho, escolhida.negada,
+                                       escolhida.condicional, escolhida.fonte)
     return list(escolhidas.values())

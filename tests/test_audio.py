@@ -272,3 +272,10 @@ def test_wav_compativel_converte_taxa(tmp_path):
     convertido = fala.wav_compativel(caminho)
     with wave.open(io.BytesIO(convertido)) as arquivo:
         assert arquivo.getframerate() == 16000 and arquivo.getnchannels() == 1
+
+
+def test_consolidacao_prefere_o_trecho_mais_completo():
+    azure = termos.classificar_entidades([EntidadeSaude("dor no", "SymptomOrSign", 0.9)])
+    local = termos.detectar_local("Estou com uma dor no peito muito forte")
+    [mencao] = termos.consolidar(azure + local)
+    assert mencao.fonte == "azure_health" and mencao.trecho == "dor no peito"
