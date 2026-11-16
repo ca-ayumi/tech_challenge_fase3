@@ -150,6 +150,8 @@ class ConfigMonitoramento:
     severidade_minima_alerta: str = os.getenv("SEVERIDADE_MINIMA_ALERTA", "moderada")
     janela_supressao_min: int = _inteiro("JANELA_SUPRESSAO_ALERTA_MIN", 30)
     webhook_alertas: str = os.getenv("WEBHOOK_ALERTAS", "").strip()
+    relogio: str = os.getenv("RELOGIO", "cenario").strip().lower()
+    meia_vida_risco_h: float = _decimal("MEIA_VIDA_RISCO_H", 6.0)
 
 
 CAMINHOS = Caminhos()

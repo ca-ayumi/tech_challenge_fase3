@@ -233,7 +233,10 @@ def anotar_video(sequencia: SequenciaPose, resultado: ResultadoVideo, destino: P
     from .extracao import ler_quadros
 
     quadros, fps, largura, altura, _ = ler_quadros(Path(sequencia.origem), sequencia.recorte)
-    escritor = cv2.VideoWriter(str(destino), cv2.VideoWriter_fourcc(*"mp4v"), fps, (largura, altura))
+    escritor = cv2.VideoWriter(str(destino), cv2.VideoWriter_fourcc(*"avc1"), fps, (largura, altura))
+    if not escritor.isOpened():  # sem codificador H.264: mp4v (abre no VLC, nao no navegador)
+        escritor = cv2.VideoWriter(str(destino), cv2.VideoWriter_fourcc(*"mp4v"), fps,
+                                   (largura, altura))
     estado = mod_quedas.estados(cin.calcular(sequencia), mod_quedas.ParametrosQueda())
     for indice, tempo, quadro in quadros:
         alerta = next((e for e in resultado.eventos_queda
@@ -271,7 +274,10 @@ def analisar_video(caminho: str | Path, tipo: str = "auto", prontuario: str | No
         tipo = "quarto"
     eventos_area = mod_areas.detectar(sequencia, cinematica,
                                       mod_areas.ConfigAreas.carregar(config_areas))
-    inicio_gravacao = inicio_gravacao or datetime.now().replace(microsecond=0)
+    if inicio_gravacao is None:
+        from ..relogio import agora
+
+        inicio_gravacao = agora(banco)
     anomalias = _anomalias(eventos_queda, analise_exercicio, eventos_area, prontuario,
                            inicio_gravacao)
     resultado = ResultadoVideo(

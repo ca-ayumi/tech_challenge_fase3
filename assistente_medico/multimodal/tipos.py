@@ -11,7 +11,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any
 
-MODALIDADES = ("sinais_vitais", "prescricao", "movimentacao", "audio", "video", "texto")
+MODALIDADES = ("sinais_vitais", "prescricao", "movimentacao", "audio", "video", "texto",
+               "multimodal")
 
 SEVERIDADES = ("critica", "alta", "moderada", "baixa")
 

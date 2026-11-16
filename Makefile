@@ -1,6 +1,6 @@
 .PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar \
 	baixar-dados azure monitorar avaliar-anomalias audio-gerar audio-consultas avaliar-audio \
-	instalar-video video-exemplos avaliar-video
+	instalar-video video-exemplos avaliar-video demo fusao
 
 PY := .venv/bin/python
 PIP := .venv/bin/pip
@@ -18,6 +18,8 @@ ajuda:
 	@echo "  perguntar  Ex.: make perguntar P='Ha pendencia no leito PS-07?'"
 	@echo ""
 	@echo "Fase 4 - monitoramento multimodal:"
+	@echo "  demo               Fluxo completo: sinais, prescricoes, movimentacao, video, audio e fusao"
+	@echo "  fusao              Risco multimodal por paciente e alertas consolidados"
 	@echo "  baixar-dados       Baixa BIDMC e UR Fall (PhysioNet / Univ. de Rzeszow)"
 	@echo "  azure              Verifica as credenciais Azure (Speech e Language)"
 	@echo "  monitorar          Simula 24 h de monitoramento com alertas (A=3600 acelera)"
@@ -93,3 +95,9 @@ video-exemplos:
 avaliar-video:
 	$(PY) -m assistente_medico.cli video extrair
 	$(PY) -m assistente_medico.cli video avaliar
+
+demo:
+	$(PY) -m assistente_medico.cli monitorar demo
+
+fusao:
+	$(PY) -m assistente_medico.cli monitorar fusao

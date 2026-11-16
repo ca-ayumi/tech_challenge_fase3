@@ -128,7 +128,8 @@ def _prontuario_do_nome(caminho: Path) -> str | None:
 def analisar_consulta(caminho: str | Path, prontuario: str | None = None,
                       basal: str | Path | None = None, banco=None, central=None,
                       usar_azure: bool = True, config: ConfigAzure | None = None,
-                      anonimizador: Anonimizador | None = None) -> ResultadoConsulta:
+                      anonimizador: Anonimizador | None = None,
+                      instante: datetime | None = None) -> ResultadoConsulta:
     caminho = Path(caminho)
     config = config or AZURE
     prontuario = prontuario or _prontuario_do_nome(caminho)
@@ -184,7 +185,11 @@ def analisar_consulta(caminho: str | Path, prontuario: str | None = None,
         mencoes = termos.consolidar(mencoes + reserva)
         fontes.setdefault("linguagem", "detector local")
 
-    agora = datetime.now().isoformat(timespec="seconds")
+    if instante is None:
+        from ..relogio import agora as relogio
+
+        instante = relogio(banco)
+    agora = instante.isoformat(timespec="seconds")
     referencia = "a linha de base do paciente" if medidas_basais else "faixas de referencia"
     anomalias = []
     for indicador in indicadores:

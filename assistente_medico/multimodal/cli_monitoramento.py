@@ -5,20 +5,14 @@ from __future__ import annotations
 import argparse
 import json
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from ..config import CAMINHOS
 from ..dados.banco import preparar_banco
+from . import demonstracao, fusao
 from .alertas import CentralAlertas
-from .anomalias import (
-    DetectorMovimentacao,
-    DetectorPrescricoes,
-    DetectorSinaisVitais,
-    ParametrosSinaisVitais,
-    avaliacao,
-    sintetico,
-)
-from .anomalias.fontes import ler_bidmc, ler_urfall, registros_bidmc, registros_urfall
+from .anomalias import DetectorSinaisVitais, ParametrosSinaisVitais, avaliacao, sintetico
+from .anomalias.fontes import ler_bidmc, registros_bidmc, registros_urfall
 from .tempo_real import Leitura, Monitor
 
 CORES = {"maxima": "\033[1;31m", "alta": "\033[31m", "media": "\033[33m", "informativa": "\033[36m"}
@@ -98,17 +92,6 @@ def _markdown(resultado: dict) -> str:
     return "\n".join(partes) + "\n"
 
 
-def _leituras_queda(dados: dict, prontuario: str) -> list[Leitura]:
-    """Encaixa uma queda real do UR Fall na saida noturna do paciente, para a demonstracao."""
-    saidas = [r for r in dados["rotulos"]
-              if r["prontuario"] == prontuario and r["evento"] == "saida_noturna"]
-    arquivos = [c for c in registros_urfall() if c.name.startswith("fall-01")]
-    if not saidas or not arquivos:
-        return []
-    momento = datetime.fromisoformat(saidas[0]["inicio"]) + timedelta(minutes=7)
-    return ler_urfall(arquivos[0], prontuario=prontuario, inicio=momento)
-
-
 def _imprimir(leitura: Leitura, resultados: list, leitos: dict[str, str]) -> None:
     for r in resultados:
         if not r.emitido:
@@ -139,6 +122,14 @@ def _simular(args: argparse.Namespace) -> int:
     analise = banco.abrir_analise("monitoramento", prontuario=alvo,
                                   origem="bidmc" if args.bidmc else "internacao")
 
+    def cabecalho(descricao: str) -> None:
+        print(f"Monitorando {descricao}" + (f" de {leitos.get(alvo, alvo)}" if alvo else
+                                            f" de {len(pacientes)} pacientes")
+              + (f", aceleracao {args.aceleracao:g}x" if args.aceleracao else "") + "\n")
+
+    def mostrar(leitura, resultados):
+        _imprimir(leitura, resultados, leitos)
+
     if args.bidmc:
         caminhos = [c for c in registros_bidmc() if c.stem.startswith(f"bidmc_{args.bidmc:02d}")]
         if not caminhos:
@@ -149,39 +140,68 @@ def _simular(args: argparse.Namespace) -> int:
         if args.injetar:
             leituras, injecao = avaliacao.injetar(leituras, args.injetar, random.Random(args.semente))
             print(f"Evento '{args.injetar}' injetado as {injecao.inicio:%H:%M:%S}.")
-        detectores = [DetectorSinaisVitais(ParametrosSinaisVitais.alta_frequencia())]
-        aquecimento: list[Leitura] = []
+        cabecalho(f"{len(leituras)} leituras (1 Hz)")
+        monitor = Monitor(central, [DetectorSinaisVitais(ParametrosSinaisVitais.alta_frequencia())],
+                          analise_id=analise)
+        resumo = monitor.reproduzir(leituras, aceleracao=args.aceleracao or None, ao_processar=mostrar)
     else:
-        leituras = avaliacao.leituras_internacao(dados)
-        if args.com_queda:
-            leituras = sorted(leituras + _leituras_queda(dados, "875431"), key=lambda item: item.instante)
-        if alvo:
-            leituras = [leitura for leitura in leituras if leitura.prontuario == alvo]
-        corte = leituras[-1].instante - timedelta(hours=args.horas) if leituras else None
-        aquecimento = [leitura for leitura in leituras if corte and leitura.instante < corte]
-        leituras = [leitura for leitura in leituras if not corte or leitura.instante >= corte]
-        detectores = [
-            DetectorSinaisVitais(ParametrosSinaisVitais.horario()),
-            DetectorPrescricoes.do_banco(banco),
-            DetectorMovimentacao(risco_queda=dados["risco_queda"]),
-        ]
-
-    for leitura in aquecimento:
-        for detector in detectores:
-            if leitura.modalidade in detector.modalidades:
-                detector.atualizar(leitura)
-
-    print(f"Monitorando {len(leituras)} leituras"
-          + (f" de {leitos.get(alvo, alvo)}" if alvo else f" de {len(pacientes)} pacientes")
-          + (f", aceleracao {args.aceleracao:g}x" if args.aceleracao else "") + "\n")
-    monitor = Monitor(central, detectores, analise_id=analise)
-    resumo = monitor.reproduzir(leituras, aceleracao=args.aceleracao or None,
-                                ao_processar=lambda leitura, r: _imprimir(leitura, r, leitos))
+        cabecalho(f"as ultimas {args.horas:g} h")
+        resumo = demonstracao.fluxo(banco, central, dados, horas=args.horas, prontuario=alvo,
+                                    com_queda=args.com_queda, aceleracao=args.aceleracao or None,
+                                    ao_processar=mostrar, analise_id=analise)
     banco.concluir_analise(analise, resumo.como_dicionario())
     print(f"\n{resumo.leituras} leituras | {resumo.anomalias} anomalias | "
           f"{len(resumo.alertas)} alertas emitidos | {resumo.suprimidos} repeticoes suprimidas | "
           f"{resumo.abaixo_do_limiar} abaixo do limiar")
     print("Reconheca um alerta com: python -m assistente_medico.cli alertas --reconhecer ID "
+          "--profissional 'Nome'")
+    return 0
+
+
+NIVEL_COR = {"critico": CORES["maxima"], "alto": CORES["alta"], "moderado": CORES["media"],
+             "baixo": ""}
+
+
+def _imprimir_fusao(banco, consolidados) -> None:
+    leitos = {p["prontuario"]: p["leito"] for p in banco.listar_pacientes()}
+    print(f"{'Leito':8s} {'Risco':>5s}  {'Nivel':9s} Modalidades")
+    for avaliacao_paciente, resultados in consolidados:
+        cor = NIVEL_COR.get(avaliacao_paciente.nivel, "")
+        modalidades = ", ".join(fusao.NOMES_MODALIDADE.get(m, m) for m in avaliacao_paciente.modalidades)
+        leito = leitos.get(avaliacao_paciente.prontuario, avaliacao_paciente.prontuario)
+        print(f"{cor}{leito:8s} {avaliacao_paciente.escore:5.0f}  {avaliacao_paciente.nivel:9s} "
+              f"{modalidades}{NEUTRO}")
+        for resultado in resultados:
+            if resultado.emitido:
+                print(f"{'':16s}ALERTA CONSOLIDADO #{resultado.alerta_id} "
+                      f"[{resultado.anomalia.prioridade.upper()}] {resultado.anomalia.descricao}")
+
+
+def _fusao(args: argparse.Namespace) -> int:
+    banco = preparar_banco()
+    _imprimir_fusao(banco, fusao.consolidar(banco, CentralAlertas(banco)))
+    return 0
+
+
+def _demo(args: argparse.Namespace) -> int:
+    banco = preparar_banco()
+    leitos = {p["prontuario"]: p["leito"] for p in banco.listar_pacientes()}
+
+    def mostrar(leitura, resultados):
+        _imprimir(leitura, resultados, leitos)
+
+    demonstracao.executar(banco, usar_azure=not args.sem_azure, usar_video=not args.sem_video,
+                          horas=args.horas, ao_processar=mostrar if args.detalhar else None)
+    print()
+    _imprimir_fusao(banco, [(a, []) for a in fusao.avaliar_todos(banco)])
+    consolidados = [a for a in banco.listar_alertas(limite=200)
+                    if a["categoria"] == "anomalia_multimodal"]
+    print(f"\n{len(consolidados)} alertas consolidados abertos:")
+    for alerta in consolidados:
+        leito = leitos.get(alerta["prontuario"], alerta["prontuario"])
+        print(f"  #{alerta['id']:<4} [{alerta['prioridade'].upper():8s}] {leito:8s} "
+              f"{alerta['mensagem'][:160]}")
+    print("\nReconheca com: python -m assistente_medico.cli alertas --reconhecer ID "
           "--profissional 'Nome'")
     return 0
 
@@ -213,3 +233,13 @@ def registrar(subparsers) -> None:
     simular.add_argument("--manter-historico", action="store_true",
                          help="Nao apaga anomalias e alertas de simulacoes anteriores.")
     simular.set_defaults(funcao=_simular)
+
+    parser_fusao = acoes.add_parser("fusao", help="Risco multimodal por paciente e alertas consolidados.")
+    parser_fusao.set_defaults(funcao=_fusao)
+
+    demo = acoes.add_parser("demo", help="Demonstracao ponta a ponta: fluxo, video, audio e fusao.")
+    demo.add_argument("--sem-azure", action="store_true", help="Audio so com analise local.")
+    demo.add_argument("--sem-video", action="store_true", help="Pula a analise de video.")
+    demo.add_argument("--horas", type=float, default=24.0)
+    demo.add_argument("--detalhar", action="store_true", help="Mostra cada alerta do fluxo.")
+    demo.set_defaults(funcao=_demo)
