@@ -28,3 +28,6 @@ modelos/adaptador-lora/0*_adapters.safetensors
 
 # Midia e datasets baixados para o monitoramento multimodal (Fase 4)
 dados/multimodal/
+
+# Pesos do YOLOv8 (baixados automaticamente pela Ultralytics)
+modelos/*.pt

@@ -9,6 +9,7 @@ Subcomandos:
     azure        Verifica as credenciais dos servicos Azure (Speech e Language).
     monitorar    Monitoramento multimodal: gerar, avaliar, simular.
     audio        Analise de audio de consultas: gerar, analisar, consultas, avaliar.
+    video        Analise de video (YOLOv8): analisar, exemplos, extrair, avaliar.
     validacoes   Lista e decide os pedidos de validacao humana pendentes.
     auditoria    Mostra a trilha de uma interacao.
     politicas    Lista as politicas de seguranca vigentes.
@@ -309,6 +310,10 @@ def construir_parser() -> argparse.ArgumentParser:
     from .multimodal.cli_audio import registrar as registrar_audio
 
     registrar_audio(subparsers)
+
+    from .multimodal.cli_video import registrar as registrar_video
+
+    registrar_video(subparsers)
 
     validacoes = subparsers.add_parser("validacoes", help="Validacoes humanas.")
     validacoes.add_argument("--status-filtro", default="pendente")

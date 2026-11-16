@@ -12,3 +12,5 @@ rich>=13.7
 numpy>=1.26
 scikit-learn>=1.5
 praat-parselmouth>=0.4.4
+matplotlib>=3.8
+opencv-python-headless>=4.9

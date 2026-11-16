@@ -14,6 +14,7 @@ import argparse
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -59,6 +60,49 @@ def _voiced() -> list[tuple[str, str]]:
     return arquivos
 
 
+def _urfall_video() -> list[tuple[str, str]]:
+    base = "http://fenix.ur.edu.pl/~mkepski/ds/data"
+    arquivos = [(f"{base}/urfall-cam0-falls.csv", "urfall-cam0-falls.csv"),
+                (f"{base}/urfall-cam0-adls.csv", "urfall-cam0-adls.csv")]
+    arquivos += [(f"{base}/fall-{i:02d}-cam0.mp4", f"fall-{i:02d}-cam0.mp4") for i in range(1, 31)]
+    arquivos += [(f"{base}/adl-{i:02d}-cam0.mp4", f"adl-{i:02d}-cam0.mp4") for i in range(1, 41)]
+    return arquivos
+
+
+VIDEOS_COMMONS = {
+    "Muscle Strengthening at Home - Half squat.webm": "agachamento_cdc.webm",
+    "Escalera de dedos.ogv": "escada_de_dedos.ogv",
+    "Basic single leg squat.webm": "agachamento_unipodal.webm",
+    "Strength Training Circuit- Forward Lunge.webm": "afundo_alternado.webm",
+}
+
+
+def _commons() -> list[tuple[str, str]]:
+    base = "https://commons.wikimedia.org/wiki/Special:FilePath/"
+    return [(base + urllib.parse.quote(titulo), destino) for titulo, destino in VIDEOS_COMMONS.items()]
+
+
+def creditos_commons() -> str:
+    """Autor e licenca de cada video do Commons, consultados na API (atribuicao exigida)."""
+    import json
+    import re
+
+    titulos = "|".join(f"File:{t}" for t in VIDEOS_COMMONS)
+    url = ("https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo"
+           "&iiprop=extmetadata|url&titles=" + urllib.parse.quote(titulos))
+    requisicao = urllib.request.Request(url, headers={"User-Agent": AGENTE})
+    with urllib.request.urlopen(requisicao, timeout=60) as resposta:
+        paginas = json.load(resposta)["query"]["pages"].values()
+    linhas = ["| Arquivo local | Titulo no Commons | Autor | Licenca |", "|---|---|---|---|"]
+    for pagina in paginas:
+        titulo = pagina["title"][5:]
+        meta = pagina["imageinfo"][0]["extmetadata"]
+        autor = re.sub(r"<[^>]+>", "", meta.get("Artist", {}).get("value", "?")).strip()
+        licenca = meta.get("LicenseShortName", {}).get("value", "?")
+        linhas.append(f"| {VIDEOS_COMMONS.get(titulo, '?')} | {titulo} | {autor} | {licenca} |")
+    return "\n".join(linhas)
+
+
 DATASETS = {
     "bidmc": Dataset(
         nome="bidmc",
@@ -94,6 +138,26 @@ DATASETS = {
                 "2018;68:310-321.",
         arquivos=_voiced,
     ),
+    "urfall_video": Dataset(
+        nome="urfall_video",
+        descricao="UR Fall Detection Dataset, video da camera frontal (cam0): profundidade e "
+                  "RGB lado a lado, 30 fps; mais os rotulos quadro a quadro (-1 em pe, "
+                  "0 transicao, 1 deitado).",
+        origem="https://fenix.ur.edu.pl/~mkepski/ds/uf.html",
+        licenca="Creative Commons BY-NC-SA 4.0 (uso academico nao comercial)",
+        citacao="Kwolek B, Kepski M. Human fall detection on embedded platform using depth "
+                "maps and wireless accelerometer. Comput Methods Programs Biomed. "
+                "2014;117(3):489-501.",
+        arquivos=_urfall_video,
+    ),
+    "exercicios": Dataset(
+        nome="exercicios",
+        descricao="Videos de exercicios e fisioterapia do Wikimedia Commons (creditos abaixo).",
+        origem="https://commons.wikimedia.org/",
+        licenca="Varia por arquivo (dominio publico, CC BY 3.0, CC BY-SA 3.0/4.0); ver tabela",
+        citacao="Atribuicao por arquivo na tabela abaixo.",
+        arquivos=_commons,
+    ),
 }
 
 
@@ -127,10 +191,11 @@ def preparar(dataset: Dataset, raiz: Path) -> Path:
             time.sleep(0.2)
         print(f"\r  {dataset.nome}: {indice}/{len(arquivos)}", end="", flush=True)
     print(f"  ({novos} novos)")
+    extra = f"\n{creditos_commons()}\n" if dataset.nome == "exercicios" else ""
     (pasta / "ORIGEM.md").write_text(
         f"# {dataset.nome}\n\n{dataset.descricao}\n\n"
         f"- Origem: {dataset.origem}\n- Licenca: {dataset.licenca}\n"
-        f"- Citacao: {dataset.citacao}\n",
+        f"- Citacao: {dataset.citacao}\n{extra}",
         encoding="utf-8",
     )
     return pasta

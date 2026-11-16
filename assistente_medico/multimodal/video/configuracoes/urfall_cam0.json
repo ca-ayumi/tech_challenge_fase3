@@ -1,0 +1,12 @@
+{
+  "_descricao": "Camera frontal do quarto do UR Fall (cam0, RGB 320x240). Coordenadas relativas (0-1); a posicao da pessoa e o ponto dos tornozelos.",
+  "zonas": [
+    {
+      "nome": "porta de saida",
+      "poligono": [[0.45, 0.62], [0.70, 0.62], [0.70, 0.82], [0.45, 0.82]],
+      "severidade": "moderada",
+      "permanencia_s": 1.0
+    }
+  ],
+  "objetos_risco": ["knife", "scissors"]
+}

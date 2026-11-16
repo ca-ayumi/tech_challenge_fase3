@@ -1,5 +1,6 @@
 .PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar \
-	baixar-dados azure monitorar avaliar-anomalias audio-gerar audio-consultas avaliar-audio
+	baixar-dados azure monitorar avaliar-anomalias audio-gerar audio-consultas avaliar-audio \
+	instalar-video video-exemplos avaliar-video
 
 PY := .venv/bin/python
 PIP := .venv/bin/pip
@@ -24,6 +25,9 @@ ajuda:
 	@echo "  audio-gerar        Sintetiza as consultas de exemplo (Azure Text to Speech)"
 	@echo "  audio-consultas    Analisa as consultas: voz, transcricao, termos criticos, alertas"
 	@echo "  avaliar-audio      Avalia a analise de audio e grava avaliacao/resultados/audio.md"
+	@echo "  instalar-video     Instala o YOLOv8 (ultralytics + PyTorch)"
+	@echo "  video-exemplos     Analisa os videos de exemplo (queda, exercicios) e gera relatorios"
+	@echo "  avaliar-video      Avalia a deteccao de queda por video no UR Fall"
 
 instalar:
 	python3.11 -m venv .venv
@@ -79,3 +83,13 @@ audio-consultas:
 
 avaliar-audio:
 	$(PY) -m assistente_medico.cli audio avaliar
+
+instalar-video:
+	$(PIP) install -r requirements-video.txt
+
+video-exemplos:
+	$(PY) -m assistente_medico.cli video exemplos --anotar
+
+avaliar-video:
+	$(PY) -m assistente_medico.cli video extrair
+	$(PY) -m assistente_medico.cli video avaliar

@@ -1,0 +1,55 @@
+{
+  "dataset": "UR Fall Detection (video RGB, cam0)",
+  "parametros": {
+    "tronco_vertical": 35.0,
+    "razao_ereto": 0.8,
+    "tronco_horizontal": 60.0,
+    "razao_chao": 1.0,
+    "altura_chao": 0.55,
+    "janela_referencia_s": 2.0,
+    "persistencia_chao_s": 0.5,
+    "transicao_maxima_s": 1.0,
+    "velocidade_minima": 1.0,
+    "janela_velocidade_pos_s": 1.0,
+    "descida_minima": 0.3,
+    "tempo_no_chao_critico_s": 10.0,
+    "sobreposicao_movel": 0.4
+  },
+  "particoes": {
+    "calibracao (impares)": {
+      "quedas": 15,
+      "atividades": 20,
+      "sensibilidade": 0.867,
+      "especificidade": 0.9,
+      "atividades_deitando_sem_alarme": "6/8",
+      "latencia_mediana_s": 0.67,
+      "vp": 13,
+      "fn": 2,
+      "fp": 2,
+      "vn": 18,
+      "erros": [
+        "adl-33",
+        "adl-37",
+        "fall-03",
+        "fall-05"
+      ]
+    },
+    "teste (pares)": {
+      "quedas": 15,
+      "atividades": 20,
+      "sensibilidade": 1.0,
+      "especificidade": 0.9,
+      "atividades_deitando_sem_alarme": "6/8",
+      "latencia_mediana_s": 0.37,
+      "vp": 15,
+      "fn": 0,
+      "fp": 2,
+      "vn": 18,
+      "erros": [
+        "adl-22",
+        "adl-32"
+      ]
+    }
+  },
+  "gerado_em": "2026-11-15T21:27:50"
+}

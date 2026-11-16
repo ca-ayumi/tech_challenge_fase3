@@ -1,0 +1,4 @@
+# Inferencia de video (YOLOv8-pose e YOLOv8). Traz o PyTorch; fica fora do CI,
+# cujos testes usam esqueletos sinteticos e nao precisam do modelo.
+-r requirements.txt
+ultralytics>=8.3
