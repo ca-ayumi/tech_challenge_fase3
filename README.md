@@ -34,6 +34,8 @@ make demo                               # fluxo completo: sinais, prescrições,
 BACKEND_LLM=eco make app                # painel; a primeira aba é Monitoramento
 ```
 
+**Enviar uma gravação pelo painel:** na aba Monitoramento, "📤 Enviar gravação para análise" recebe um vídeo (sessão de fisioterapia ou câmera do quarto: mp4, mov, avi, webm, ogv, mkv) ou um áudio de consulta (wav, mp3, flac). Você escolhe o paciente e o tipo de análise e clica em "Analisar". O sistema mostra o relatório automático de desvios, o vídeo anotado ou a transcrição, envia os achados à central de alertas e recalcula a fusão. Um alerta consolidado aparece na hora. O mesmo processamento existe pelo terminal (`video analisar`, `audio analisar`).
+
 Sem as chaves da Azure, tudo roda em modo local (`--sem-azure`): a voz é medida localmente e os termos críticos são buscados por um detector de reserva.
 
 ### Resultados
@@ -202,12 +204,14 @@ assistente_medico/
 ├── grafo/                 Estado, nós e montagem do fluxo LangGraph
 ├── app/
 │   ├── streamlit_app.py   Interface web
-│   └── monitoramento.py   Aba Monitoramento (Fase 4)
+│   ├── monitoramento.py   Aba Monitoramento (Fase 4)
+│   └── envio.py           Envio de vídeo ou áudio pelo painel (Fase 4)
 └── multimodal/            Fase 4
     ├── tipos.py           Contrato único: Anomalia
     ├── tempo_real.py      Monitor: leituras em fluxo, detectores online
     ├── alertas.py         Central de alertas: limiar, supressão, notificação, reconhecimento
     ├── fusao.py           Escore de risco por paciente e regras de correlação
+    ├── envio.py           Gravação enviada pela equipe: salva, analisa, alerta, refaz a fusão
     ├── relogio.py         Relógio do cenário x hora real
     ├── demonstracao.py    Fluxo ponta a ponta (CLI e painel)
     ├── azure/             Cliente REST, Speech (STT/TTS), Language (sentimento, Health)

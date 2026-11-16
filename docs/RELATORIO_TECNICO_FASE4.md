@@ -16,8 +16,8 @@ A decisão central é a mesma da Fase 3: **separar o que precisa ser verdadeiro 
 
 | Requisito do enunciado | Onde está | Seção |
 |---|---|---|
-| Vídeo: processar sessões clínicas, postura (OpenPose) e objetos/áreas (YOLOv8), relatório de desvios | `multimodal/video/` | 4.5 |
-| Áudio: consultas, alterações vocais, Azure Speech to Text, Azure Text Analytics | `multimodal/audio/`, `multimodal/azure/` | 4.4, 5 |
+| Vídeo: processar sessões clínicas, postura (OpenPose) e objetos/áreas (YOLOv8), relatório de desvios | `multimodal/video/`; envio pelo painel em `multimodal/envio.py` | 4.5, 2.2 |
+| Áudio: consultas, alterações vocais, Azure Speech to Text, Azure Text Analytics | `multimodal/audio/`, `multimodal/azure/`; envio pelo painel | 4.4, 5, 2.2 |
 | Anomalias em sinais vitais (séries temporais) | `multimodal/anomalias/sinais_vitais.py` | 4.1 |
 | Anomalias na evolução de prescrições | `multimodal/anomalias/prescricoes.py` | 4.2 |
 | Anomalias nos padrões de movimentação durante a internação | `multimodal/anomalias/movimentacao.py` | 4.3 |
@@ -108,6 +108,14 @@ Para não alertar a cada leitura, os detectores trabalham por **episódio** (`ep
 - a condição precisa **persistir** por um tempo mínimo antes de abrir o episódio (um pico isolado de artefato não abre);
 - o episódio emite na abertura e volta a emitir **só se piorar**;
 - ele fecha depois de algumas leituras normais seguidas.
+
+Gravações chegam de outro jeito: a equipe **envia** o arquivo pelo painel (aba Monitoramento, "Enviar gravação para análise"). É o caso do vídeo de uma sessão de fisioterapia, de um trecho da câmera do quarto ou do áudio de uma consulta. O `envio.py` faz quatro coisas:
+1. valida o formato e o tamanho (até 200 MB);
+2. guarda o arquivo com um prefixo do hash do conteúdo, de modo que reenviar o mesmo arquivo reaproveita as poses já extraídas;
+3. roda a mesma análise do terminal, com barra de progresso quadro a quadro, e manda as anomalias à central;
+4. recalcula a fusão do paciente.
+
+A tela mostra o relatório de desvios, os alertas individuais e os consolidados que o envio gerou. Quando um desvio não vira alerta, a tela diz o motivo: severidade abaixo do limiar ou alerta repetido em 30 min. Para o áudio, a equipe escolhe se a voz é comparada com a gravação de base do paciente, com outra gravação enviada ou com faixas de referência. A comparação com a base só faz sentido quando a gravação é da mesma pessoa.
 
 ### 2.3 Relógio do cenário
 
@@ -297,6 +305,7 @@ Recursos na região `canadacentral`, camada F0. A assinatura Azure for Students 
 O ciclo se fecha com o **reconhecimento**. Na aba Monitoramento do Streamlit (ou com `alertas --reconhecer ID --profissional "Nome"`), a equipe marca o alerta como visto, e a trilha de auditoria registra quem reconheceu, com qual perfil e quando.
 
 A aba **Monitoramento** é a primeira do painel e mostra:
+- o envio de gravações (vídeo ou áudio) para análise, com o relatório e os alertas gerados na hora (seção 2.2);
 - os pacientes ordenados por risco, com as modalidades que contribuem e as correlações encontradas;
 - os alertas consolidados, com as evidências e o botão "Reconhecer";
 - o histórico de reconhecimentos (detecção → alerta → resposta);
@@ -437,7 +446,7 @@ Vários resultados acima só ficaram bons depois de investigarmos casos concreto
 - **UR Fall é um ambiente controlado:** um quarto, uma câmera, quedas encenadas. Hospitais têm oclusões, várias pessoas e iluminação noturna.
 - **Sem separação de falantes na camada gratuita da Azure** (seção 5).
 - **Regras de correlação escritas à mão.** São seis, explícitas e auditáveis. Com dados reais rotulados, os pesos e as janelas poderiam ser aprendidos.
-- **Fluxo reproduzido, não integrado.** O `Monitor` reproduz leituras gravadas; uma implantação ligaria o mesmo contrato a um barramento de eventos (Event Hubs, IoT Hub).
+- **Fluxo reproduzido, não integrado.** O `Monitor` reproduz leituras gravadas; uma implantação ligaria o mesmo contrato a um barramento de eventos (Event Hubs, IoT Hub). Do mesmo modo, o envio de gravações é um formulário no painel. Num hospital, os vídeos e áudios viriam do PACS ou do prontuário eletrônico, com o processamento numa fila em segundo plano, e não na sessão de quem enviou.
 
 ---
 

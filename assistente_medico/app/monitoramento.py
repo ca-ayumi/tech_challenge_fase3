@@ -9,6 +9,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from assistente_medico.app.envio import secao_envio
 from assistente_medico.config import AZURE, MONITORAMENTO
 from assistente_medico.multimodal import demonstracao, fusao
 from assistente_medico.multimodal.alertas import CentralAlertas
@@ -182,6 +183,9 @@ def aba_monitoramento(banco) -> None:
                "fusão tardia de sinais vitais, prescrições, movimentação, voz, fala e vídeo")
     with st.expander("Executar demonstração", expanded=not banco.listar_anomalias(limite=1)):
         _executar_demonstracao(banco)
+    with st.expander("📤 Enviar gravação para análise (vídeo ou áudio)",
+                     expanded="envio_resultado" in st.session_state):
+        secao_envio(banco)
 
     pacientes = {p["prontuario"]: p for p in banco.listar_pacientes()}
     avaliacoes = fusao.avaliar_todos(banco, referencia)
