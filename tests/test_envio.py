@@ -122,17 +122,19 @@ def _pagina_envio(caminho_banco: str) -> None:
     secao_envio(BancoHospital(caminho_banco))
 
 
-def test_tela_de_envio_renderiza_video_e_audio(banco_envio):
+def test_tela_de_envio_tem_um_campo_para_video_e_audio(banco_envio):
     from streamlit.testing.v1 import AppTest
 
     tela = AppTest.from_function(_pagina_envio, args=(str(banco_envio.caminho),)).run()
     assert not tela.exception
-    assert [b.label for b in tela.button] == ["Analisar vídeo"] and tela.button[0].disabled
     assert tela.selectbox(key="envio_paciente").options
-    tela.radio(key="envio_midia").set_value("Áudio").run()
-    assert not tela.exception
-    assert [b.label for b in tela.button] == ["Analisar áudio"]
-    assert "Faixas de referência (sem base)" in tela.radio[1].options
+    assert not tela.button and not tela.radio
+
+
+def test_midia_reconhecida_pela_extensao():
+    assert envio.midia_do_arquivo("553119_consulta.WAV") == "audio"
+    assert envio.midia_do_arquivo("sessao.webm") == "video"
+    assert envio.midia_do_arquivo("laudo.pdf") is None
 
 
 def test_bidmc_ausente_e_listagem(tmp_path, monkeypatch):

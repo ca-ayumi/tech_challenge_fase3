@@ -39,6 +39,16 @@ class ResultadoEnvio:
     consolidados_novos: list[dict[str, Any]] = field(default_factory=list)
 
 
+def midia_do_arquivo(nome: str) -> str | None:
+    """'video' ou 'audio' pela extensao; None se o formato nao e suportado."""
+    extensao = Path(nome).suffix.lower()
+    if extensao in EXTENSOES_VIDEO:
+        return "video"
+    if extensao in EXTENSOES_AUDIO:
+        return "audio"
+    return None
+
+
 def salvar_envio(nome: str, conteudo: bytes, midia: str, pasta: Path | None = None) -> Path:
     """Guarda o arquivo enviado com nome seguro e prefixo do conteudo (reenvio reaproveita o cache)."""
     extensoes = EXTENSOES_VIDEO if midia == "video" else EXTENSOES_AUDIO

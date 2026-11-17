@@ -26,9 +26,7 @@ def _barra():
     return lambda fracao, texto: barra.progress(min(max(fracao, 0.0), 1.0), text=texto)
 
 
-def _formulario_video(banco, prontuario: str) -> None:
-    arquivo = st.file_uploader("Vídeo clínico", type=[e[1:] for e in envio.EXTENSOES_VIDEO],
-                               key="envio_video")
+def _formulario_video(banco, prontuario: str, arquivo) -> None:
     coluna_tipo, coluna_areas = st.columns(2)
     tipo = coluna_tipo.selectbox("Tipo de análise", list(TIPOS_VIDEO), format_func=TIPOS_VIDEO.get)
     opcoes_areas = ["nenhuma"] + sorted(c.name for c in CONFIGURACOES_AREAS.glob("*.json"))
@@ -37,7 +35,7 @@ def _formulario_video(banco, prontuario: str) -> None:
         help="Polígonos configurados por câmera (ex.: porta de saída do quarto). "
              "Arquivos em multimodal/video/configuracoes/.")
     anotar = st.checkbox("Gerar vídeo anotado com o esqueleto", value=True)
-    if st.button("Analisar vídeo", type="primary", disabled=arquivo is None):
+    if st.button("Analisar vídeo", type="primary"):
         try:
             caminho = envio.salvar_envio(arquivo.name, arquivo.getvalue(), "video")
             resultado = envio.analisar_video_enviado(
@@ -56,9 +54,7 @@ def _formulario_video(banco, prontuario: str) -> None:
         st.session_state["envio_resultado"] = resultado
 
 
-def _formulario_audio(banco, prontuario: str) -> None:
-    arquivo = st.file_uploader("Áudio da consulta", type=[e[1:] for e in envio.EXTENSOES_AUDIO],
-                               key="envio_audio")
+def _formulario_audio(banco, prontuario: str, arquivo) -> None:
     azure_ok = AZURE.fala_configurada and AZURE.linguagem_configurada
     usar_azure = st.checkbox("Transcrever e analisar o texto com a Azure (Speech + Language)",
                              value=azure_ok, disabled=not azure_ok,
@@ -74,7 +70,7 @@ def _formulario_audio(banco, prontuario: str) -> None:
     if escolha == "enviar":
         arquivo_basal = st.file_uploader("Gravação de base", type=[e[1:] for e in envio.EXTENSOES_AUDIO],
                                          key="envio_basal")
-    if st.button("Analisar áudio", type="primary", disabled=arquivo is None):
+    if st.button("Analisar áudio", type="primary"):
         try:
             caminho = envio.salvar_envio(arquivo.name, arquivo.getvalue(), "audio")
             basal = registrada if escolha == "registrada" else None
@@ -140,15 +136,20 @@ def secao_envio(banco) -> None:
                "uma consulta. O sistema gera o relatório automático, manda os achados para a central "
                "de alertas e recalcula o risco do paciente.")
     pacientes = {p["prontuario"]: p for p in banco.listar_pacientes()}
-    coluna_paciente, coluna_midia = st.columns([3, 2])
-    prontuario = coluna_paciente.selectbox("Paciente da gravação", list(pacientes),
-                                           format_func=lambda p: _rotulo_paciente(pacientes, p),
-                                           key="envio_paciente")
-    midia = coluna_midia.radio("Mídia", ["Vídeo", "Áudio"], horizontal=True, key="envio_midia")
-    if midia == "Vídeo":
-        _formulario_video(banco, prontuario)
-    else:
-        _formulario_audio(banco, prontuario)
+    prontuario = st.selectbox("Paciente da gravação", list(pacientes),
+                              format_func=lambda p: _rotulo_paciente(pacientes, p), key="envio_paciente")
+    arquivo = st.file_uploader(
+        "Gravação (vídeo ou áudio)", key="envio_arquivo",
+        type=[e[1:] for e in envio.EXTENSOES_VIDEO + envio.EXTENSOES_AUDIO],
+        help="O tipo é reconhecido pela extensão: vídeo (mp4, mov, avi, webm, ogv, mkv) ou "
+             "áudio (wav, mp3, flac).")
+    midia = envio.midia_do_arquivo(arquivo.name) if arquivo is not None else None
+    if midia == "video":
+        st.caption("🎥 Vídeo reconhecido: análise de pose (YOLOv8-pose) e objetos (YOLOv8).")
+        _formulario_video(banco, prontuario, arquivo)
+    elif midia == "audio":
+        st.caption("🎙️ Áudio reconhecido: voz (Praat) e texto (Azure Speech + Language).")
+        _formulario_audio(banco, prontuario, arquivo)
     resultado = st.session_state.get("envio_resultado")
     if resultado is not None:
         st.divider()
