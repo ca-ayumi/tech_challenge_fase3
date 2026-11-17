@@ -253,6 +253,8 @@ Recursos na região `canadacentral`, camada F0. A assinatura Azure for Students 
 O ciclo se fecha com o **reconhecimento**. Na aba Monitoramento do Streamlit (ou com `alertas --reconhecer ID --profissional "Nome"`), a equipe marca o alerta como visto, e a trilha de auditoria registra quem reconheceu, com qual perfil e quando.
 
 A aba **Monitoramento** é a primeira do painel e mostra:
+- o teste de conexão com os serviços Azure;
+- a simulação em tempo real: um registro real de UTI (BIDMC) com evento injetado, com gráfico dos sinais e alertas aparecendo na ordem em que a central os emite, ou 24 h de internação de todos os pacientes;
 - o envio de gravações (vídeo ou áudio) para análise, com o relatório e os alertas gerados na hora (seção 2.2);
 - os pacientes ordenados por risco, com as modalidades que contribuem e as correlações encontradas;
 - os alertas consolidados, com as evidências e o botão "Reconhecer";

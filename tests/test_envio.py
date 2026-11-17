@@ -133,3 +133,31 @@ def test_tela_de_envio_renderiza_video_e_audio(banco_envio):
     assert not tela.exception
     assert [b.label for b in tela.button] == ["Analisar áudio"]
     assert "Faixas de referência (sem base)" in tela.radio[1].options
+
+
+def test_bidmc_ausente_e_listagem(tmp_path, monkeypatch):
+    from assistente_medico.multimodal import demonstracao
+
+    monkeypatch.setattr(demonstracao, "registros_bidmc", lambda: [tmp_path / "bidmc_07_Numerics.csv"])
+    assert demonstracao.numeros_bidmc() == [7]
+    with pytest.raises(FileNotFoundError):
+        demonstracao.leituras_bidmc(3)
+
+
+def _pagina_simulacao(caminho_banco: str) -> None:
+    from assistente_medico.app.simulacao import secao_azure, secao_simulacao
+    from assistente_medico.dados.banco import BancoHospital
+
+    secao_azure()
+    secao_simulacao(BancoHospital(caminho_banco))
+
+
+def test_tela_de_simulacao_renderiza(banco_envio, monkeypatch):
+    from streamlit.testing.v1 import AppTest
+
+    tela = AppTest.from_function(_pagina_simulacao, args=(str(banco_envio.caminho),)).run()
+    assert not tela.exception
+    assert "Testar conexão com a Azure" in [b.label for b in tela.button]
+    tela.radio(key="simulacao_cenario").set_value("internacao").run()
+    assert not tela.exception
+    assert "▶ Iniciar simulação" in [b.label for b in tela.button]

@@ -10,6 +10,7 @@ import pandas as pd
 import streamlit as st
 
 from assistente_medico.app.envio import secao_envio
+from assistente_medico.app.simulacao import secao_azure, secao_simulacao
 from assistente_medico.config import AZURE, MONITORAMENTO
 from assistente_medico.multimodal import demonstracao, fusao
 from assistente_medico.multimodal.alertas import CentralAlertas
@@ -181,11 +182,17 @@ def aba_monitoramento(banco) -> None:
     st.caption(f"Relógio: {referencia:%d/%m/%Y %H:%M} "
                f"({'cenário sintético' if MONITORAMENTO.relogio == 'cenario' else 'hora real'}) · "
                "fusão tardia de sinais vitais, prescrições, movimentação, voz, fala e vídeo")
-    with st.expander("Executar demonstração", expanded=not banco.listar_anomalias(limite=1)):
-        _executar_demonstracao(banco)
+    with st.expander("☁️ Serviços Azure", expanded="azure_status" in st.session_state):
+        secao_azure()
+    with st.expander("⏱️ Simulação em tempo real (sinais vitais, prescrições, movimentação)",
+                     expanded="simulacao_ultima" in st.session_state):
+        secao_simulacao(banco)
     with st.expander("📤 Enviar gravação para análise (vídeo ou áudio)",
                      expanded="envio_resultado" in st.session_state):
         secao_envio(banco)
+    with st.expander("▶ Demonstração completa (tudo sincronizado)",
+                     expanded=not banco.listar_anomalias(limite=1)):
+        _executar_demonstracao(banco)
 
     pacientes = {p["prontuario"]: p for p in banco.listar_pacientes()}
     avaliacoes = fusao.avaliar_todos(banco, referencia)

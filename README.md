@@ -34,6 +34,8 @@ make demo                               # fluxo completo: sinais, prescrições,
 BACKEND_LLM=eco make app                # painel; a primeira aba é Monitoramento
 ```
 
+**Tudo pelo painel:** a aba Monitoramento testa a conexão com a Azure, roda simulações ao vivo (um paciente real de UTI do PhysioNet com um evento injetado, ou 24 h de internação de todos os pacientes, com gráfico e alertas chegando em tempo real), recebe gravações e executa a demonstração completa. Os comandos de terminal abaixo fazem o mesmo.
+
 **Enviar uma gravação pelo painel:** na aba Monitoramento, "📤 Enviar gravação para análise" recebe um vídeo (sessão de fisioterapia ou câmera do quarto: mp4, mov, avi, webm, ogv, mkv) ou um áudio de consulta (wav, mp3, flac). Você escolhe o paciente e o tipo de análise e clica em "Analisar". O sistema mostra o relatório automático de desvios, o vídeo anotado ou a transcrição, envia os achados à central de alertas e recalcula a fusão. Um alerta consolidado aparece na hora. O mesmo processamento existe pelo terminal (`video analisar`, `audio analisar`).
 
 Sem as chaves da Azure, tudo roda em modo local (`--sem-azure`): a voz é medida localmente e os termos críticos são buscados por um detector de reserva.
@@ -205,7 +207,8 @@ assistente_medico/
 ├── app/
 │   ├── streamlit_app.py   Interface web
 │   ├── monitoramento.py   Aba Monitoramento (Fase 4)
-│   └── envio.py           Envio de vídeo ou áudio pelo painel (Fase 4)
+│   ├── envio.py           Envio de vídeo ou áudio pelo painel (Fase 4)
+│   └── simulacao.py       Simulação ao vivo e teste da Azure no painel (Fase 4)
 └── multimodal/            Fase 4
     ├── tipos.py           Contrato único: Anomalia
     ├── tempo_real.py      Monitor: leituras em fluxo, detectores online

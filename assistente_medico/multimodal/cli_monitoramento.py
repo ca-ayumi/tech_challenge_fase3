@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import random
 from datetime import datetime
 
 from ..config import CAMINHOS
@@ -12,7 +11,7 @@ from ..dados.banco import preparar_banco
 from . import demonstracao, fusao
 from .alertas import CentralAlertas
 from .anomalias import DetectorSinaisVitais, ParametrosSinaisVitais, avaliacao, sintetico
-from .anomalias.fontes import ler_bidmc, registros_bidmc, registros_urfall
+from .anomalias.fontes import registros_bidmc, registros_urfall
 from .tempo_real import Leitura, Monitor
 
 CORES = {"maxima": "\033[1;31m", "alta": "\033[31m", "media": "\033[33m", "informativa": "\033[36m"}
@@ -131,14 +130,14 @@ def _simular(args: argparse.Namespace) -> int:
         _imprimir(leitura, resultados, leitos)
 
     if args.bidmc:
-        caminhos = [c for c in registros_bidmc() if c.stem.startswith(f"bidmc_{args.bidmc:02d}")]
-        if not caminhos:
+        alvo = alvo or demonstracao.PACIENTE_BIDMC
+        try:
+            leituras, injecao = demonstracao.leituras_bidmc(args.bidmc, args.injetar, args.semente,
+                                                            prontuario=alvo)
+        except FileNotFoundError:
             print("Registro BIDMC nao encontrado: rode scripts/baixar_datasets.py bidmc")
             return 1
-        alvo = alvo or "559120"
-        leituras = ler_bidmc(caminhos[0], prontuario=alvo, inicio=datetime.now().replace(microsecond=0))
-        if args.injetar:
-            leituras, injecao = avaliacao.injetar(leituras, args.injetar, random.Random(args.semente))
+        if injecao:
             print(f"Evento '{args.injetar}' injetado as {injecao.inicio:%H:%M:%S}.")
         cabecalho(f"{len(leituras)} leituras (1 Hz)")
         monitor = Monitor(central, [DetectorSinaisVitais(ParametrosSinaisVitais.alta_frequencia())],

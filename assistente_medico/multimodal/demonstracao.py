@@ -28,11 +28,33 @@ from .anomalias import (
     avaliacao,
     sintetico,
 )
-from .anomalias.fontes import ler_urfall, registros_urfall
+from .anomalias.fontes import ler_bidmc, ler_urfall, registros_bidmc, registros_urfall
 from .tempo_real import Leitura, Monitor
 
 PACIENTE_QUEDA = "875431"
 SEQUENCIA_QUEDA = "fall-01"
+PACIENTE_BIDMC = "559120"
+
+
+def numeros_bidmc() -> list[int]:
+    """Registros BIDMC baixados (bidmc_07_Numerics.csv -> 7)."""
+    return [int(c.stem.split("_")[1]) for c in registros_bidmc()]
+
+
+def leituras_bidmc(numero: int, evento: str | None = None, semente: int = 7,
+                   prontuario: str = PACIENTE_BIDMC, inicio: datetime | None = None):
+    """Registro real de UTI a 1 Hz, opcionalmente com um evento injetado (mesma semente do CLI)."""
+    import random
+
+    caminhos = [c for c in registros_bidmc() if c.stem.startswith(f"bidmc_{numero:02d}")]
+    if not caminhos:
+        raise FileNotFoundError(f"Registro BIDMC {numero} ausente: rode scripts/baixar_datasets.py bidmc")
+    leituras = ler_bidmc(caminhos[0], prontuario=prontuario,
+                         inicio=inicio or datetime.now().replace(microsecond=0))
+    injecao = None
+    if evento:
+        leituras, injecao = avaliacao.injetar(leituras, evento, random.Random(semente))
+    return leituras, injecao
 
 
 def momento_queda(dados: dict[str, Any], prontuario: str = PACIENTE_QUEDA) -> datetime | None:
