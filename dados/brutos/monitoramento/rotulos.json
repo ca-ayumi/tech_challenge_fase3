@@ -1,0 +1,166 @@
+{
+  "risco_queda": [
+    "208731",
+    "443902",
+    "553119",
+    "559120",
+    "771203",
+    "875431",
+    "884521"
+  ],
+  "eventos": [
+    {
+      "prontuario": "559120",
+      "modalidade": "sinais_vitais",
+      "evento": "insuficiencia_respiratoria",
+      "inicio": "2026-09-14T14:00",
+      "fim": "2026-09-14T23:00",
+      "tipos_esperados": [
+        "news2_elevado",
+        "parametro_critico",
+        "desvio_basal",
+        "tendencia",
+        "padrao_multivariado"
+      ]
+    },
+    {
+      "prontuario": "443902",
+      "modalidade": "sinais_vitais",
+      "evento": "deterioracao_septica",
+      "inicio": "2026-09-14T12:00",
+      "fim": "2026-09-14T23:00",
+      "tipos_esperados": [
+        "news2_elevado",
+        "parametro_critico",
+        "desvio_basal",
+        "tendencia",
+        "padrao_multivariado"
+      ]
+    },
+    {
+      "prontuario": "310445",
+      "modalidade": "sinais_vitais",
+      "evento": "febre_apos_suspensao",
+      "inicio": "2026-09-14T10:00",
+      "fim": "2026-09-14T17:00",
+      "tipos_esperados": [
+        "news2_elevado",
+        "parametro_critico",
+        "desvio_basal",
+        "tendencia",
+        "padrao_multivariado"
+      ]
+    },
+    {
+      "prontuario": "559120",
+      "modalidade": "prescricao",
+      "evento": "alergia_penicilina",
+      "inicio": "2026-09-13T16:00",
+      "fim": "2026-09-13T16:00",
+      "tipos_esperados": [
+        "conflito_alergia"
+      ]
+    },
+    {
+      "prontuario": "443902",
+      "modalidade": "prescricao",
+      "evento": "dose_10x",
+      "inicio": "2026-09-13T10:00",
+      "fim": "2026-09-13T10:00",
+      "tipos_esperados": [
+        "salto_dose",
+        "acima_referencia"
+      ]
+    },
+    {
+      "prontuario": "208731",
+      "modalidade": "prescricao",
+      "evento": "insulina_10x",
+      "inicio": "2026-09-13T20:00",
+      "fim": "2026-09-13T20:00",
+      "tipos_esperados": [
+        "salto_dose"
+      ]
+    },
+    {
+      "prontuario": "208731",
+      "modalidade": "movimentacao",
+      "evento": "imobilidade",
+      "inicio": "2026-09-14T08:00",
+      "fim": "2026-09-14T14:00",
+      "tipos_esperados": [
+        "imobilidade_prolongada"
+      ]
+    },
+    {
+      "prontuario": "117256",
+      "modalidade": "prescricao",
+      "evento": "duplo_anticoagulante",
+      "inicio": "2026-09-14T02:00",
+      "fim": "2026-09-14T02:00",
+      "tipos_esperados": [
+        "duplicidade_terapeutica"
+      ]
+    },
+    {
+      "prontuario": "310445",
+      "modalidade": "prescricao",
+      "evento": "suspensao_antimicrobiano",
+      "inicio": "2026-09-14T02:00",
+      "fim": "2026-09-14T02:00",
+      "tipos_esperados": [
+        "suspensao_sem_substituto"
+      ]
+    },
+    {
+      "prontuario": "624190",
+      "modalidade": "prescricao",
+      "evento": "alergia_morfina",
+      "inicio": "2026-09-14T17:00",
+      "fim": "2026-09-14T17:00",
+      "tipos_esperados": [
+        "conflito_alergia"
+      ]
+    },
+    {
+      "prontuario": "662480",
+      "modalidade": "prescricao",
+      "evento": "suspensao_insulina",
+      "inicio": "2026-09-14T19:00",
+      "fim": "2026-09-14T19:00",
+      "tipos_esperados": [
+        "suspensao_sem_substituto"
+      ]
+    },
+    {
+      "prontuario": "990117",
+      "modalidade": "prescricao",
+      "evento": "alergia_dipirona",
+      "inicio": "2026-09-14T19:21",
+      "fim": "2026-09-14T19:21",
+      "tipos_esperados": [
+        "conflito_alergia"
+      ]
+    },
+    {
+      "prontuario": "875431",
+      "modalidade": "movimentacao",
+      "evento": "agitacao",
+      "inicio": "2026-09-14T01:00",
+      "fim": "2026-09-14T03:00",
+      "tipos_esperados": [
+        "agitacao_noturna"
+      ]
+    },
+    {
+      "prontuario": "875431",
+      "modalidade": "movimentacao",
+      "evento": "saida_noturna",
+      "inicio": "2026-09-14T02:45",
+      "fim": "2026-09-14T03:00",
+      "tipos_esperados": [
+        "saida_leito_noturna"
+      ]
+    }
+  ]
+}

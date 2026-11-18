@@ -1,14 +1,74 @@
-# Tech Challenge Fase 3 — Assistente Clínico Institucional
+# Tech Challenge Fases 3 e 4 — Assistente Clínico e Monitoramento Multimodal
 
 [![CI](https://github.com/ca-ayumi/tech_challenge_fase3/actions/workflows/ci.yml/badge.svg)](https://github.com/ca-ayumi/tech_challenge_fase3/actions/workflows/ci.yml)
 
-Assistente virtual médico treinado com dados próprios do hospital: **fine-tuning de LLM por LoRA**, pipeline **LangChain** e fluxos de decisão em **LangGraph**, com limites de atuação, auditoria e explicabilidade.
+- **Fase 3:** assistente virtual médico treinado com dados próprios do hospital: **fine-tuning de LLM por LoRA**, pipeline **LangChain** e fluxos de decisão em **LangGraph**, com limites de atuação, auditoria e explicabilidade.
+- **Fase 4:** **monitoramento contínuo do paciente** por sinais vitais, prescrições, movimentação, **áudio** e **vídeo**, com detecção de anomalias em tempo real, **Azure Cognitive Services**, fusão multimodal e alerta à equipe.
 
 **FIAP — IA para DEVS**
 
-> ⚠️ Projeto acadêmico. Todos os protocolos, prontuários e dados pessoais são **sintéticos**, criados para este trabalho. Nada aqui representa conduta médica real nem deve ser usado na assistência.
+> ⚠️ Projeto acadêmico. Protocolos, prontuários, prescrições e consultas são **sintéticos**, criados para este trabalho; sinais vitais, vozes e vídeos reais vêm de datasets públicos citados no [relatório da Fase 4](./docs/RELATORIO_TECNICO_FASE4.md). Nada aqui representa conduta médica real nem deve ser usado na assistência.
 
 ---
+
+## Fase 4 — Monitoramento multimodal
+
+| Modalidade | Modelos e serviços | O que detecta |
+|---|---|---|
+| Sinais vitais | NEWS2 + z-score robusto na linha de base do paciente + tendência + Isolation Forest | valor perigoso, desvio do próprio paciente, piora gradual, combinação atípica; falha de sensor à parte |
+| Prescrições | regras sobre o histórico do paciente | alergia por grupo farmacológico, dose 10×, dose acima da referência, duplicidade, suspensão sem substituto |
+| Movimentação | sensor de leito e acelerômetro | imobilidade prolongada, agitação noturna, saída do leito à noite, queda |
+| Áudio | **Praat** (local) + **Azure Speech to Text** + **Azure Language** (sentimento e Text Analytics for Health) | fadiga, dispneia e disartria na voz; termos críticos no relato, respeitando negação |
+| Vídeo | **YOLOv8-pose** (17 pontos COCO, esqueleto do OpenPose) + **YOLOv8** (objetos) | queda, permanência no chão, áreas críticas, objetos de risco; repetições, amplitude, assimetria e compensação em fisioterapia |
+| Fusão | escore de risco por paciente + 6 regras de correlação clínica | um alerta consolidado por achado concordante, com o protocolo de referência |
+
+```bash
+make instalar && make instalar-video   # dependências (o YOLOv8 traz o PyTorch)
+cp .env.example .env                    # preencha AZURE_SPEECH_* e AZURE_LANGUAGE_*
+make azure                              # confere as credenciais
+make preparar && make baixar-dados      # banco, séries de internação e datasets públicos
+make audio-gerar                        # consultas sintéticas com Azure Text to Speech
+
+make demo                               # fluxo completo: sinais, prescrições, movimentação,
+                                        # vídeo, áudio, fusão e alertas consolidados
+BACKEND_LLM=eco make app                # painel; a primeira aba é Monitoramento
+```
+
+**Tudo pelo painel:** a aba Monitoramento testa a conexão com a Azure, roda simulações ao vivo (um paciente real de UTI do PhysioNet com um evento injetado, ou 24 h de internação de todos os pacientes, com gráfico e alertas chegando em tempo real), recebe gravações e executa a demonstração completa. Os comandos de terminal abaixo fazem o mesmo.
+
+**Enviar uma gravação pelo painel:** na aba Monitoramento, "📤 Enviar gravação para análise" recebe um vídeo (sessão de fisioterapia ou câmera do quarto: mp4, mov, avi, webm, ogv, mkv) ou um áudio de consulta (wav, mp3, flac). Você escolhe o paciente e o tipo de análise e clica em "Analisar". O sistema mostra o relatório automático de desvios, o vídeo anotado ou a transcrição, envia os achados à central de alertas e recalcula a fusão. Um alerta consolidado aparece na hora. O mesmo processamento existe pelo terminal (`video analisar`, `audio analisar`).
+
+Sem as chaves da Azure, tudo roda em modo local (`--sem-azure`): a voz é medida localmente e os termos críticos são buscados por um detector de reserva.
+
+### Resultados
+
+| Avaliação | Resultado |
+|---|---|
+| Sinais vitais reais (PhysioNet BIDMC, 53 pacientes) com anomalias injetadas | 100% de sensibilidade, 3,5 alertas/h sem evento, 0/53 artefatos virando alarme |
+| Queda por vídeo, UR Fall, partição de teste | 100% de sensibilidade, 90% de especificidade, latência mediana de 0,37 s |
+| Queda por acelerômetro, UR Fall, partição de teste | 93% de sensibilidade, 95% de especificidade |
+| Condições vocais em vozes não usadas na calibração | 12/12 |
+| Consultas de ponta a ponta com a Azure | 6/6 |
+| Fadiga de alarme numa execução completa | 52 alertas individuais → **6 alertas consolidados** |
+
+Fluxo multimodal, modelos, resultados, exemplos de anomalias e limitações: **[relatório técnico da Fase 4](./docs/RELATORIO_TECNICO_FASE4.md)**.
+
+### Comandos da Fase 4
+
+```bash
+python -m assistente_medico.cli monitorar simular --horas 24 --aceleracao 3600   # fluxo em tempo real
+python -m assistente_medico.cli monitorar simular --bidmc 7 --injetar dessaturacao
+python -m assistente_medico.cli monitorar fusao                                    # risco por paciente
+python -m assistente_medico.cli audio analisar dados/multimodal/audio/consultas/553119_consulta.wav
+python -m assistente_medico.cli video analisar dados/multimodal/urfall_video/fall-01-cam0.mp4 \
+    --prontuario ENF-221 --anotar
+python -m assistente_medico.cli alertas --reconhecer 12 --profissional "enf. Paula"
+make avaliar-anomalias avaliar-audio avaliar-video                                 # avaliações
+```
+
+---
+
+# Fase 3 — Assistente clínico institucional
 
 ## O que o assistente faz
 
@@ -144,14 +204,33 @@ assistente_medico/
 │   ├── guardrails.py      Aplicação das políticas na entrada e na saída
 │   └── regras_clinicas.py 14 regras determinísticas de vigilância
 ├── grafo/                 Estado, nós e montagem do fluxo LangGraph
-└── app/streamlit_app.py   Interface web
+├── app/
+│   ├── streamlit_app.py   Interface web
+│   ├── monitoramento.py   Aba Monitoramento (Fase 4)
+│   ├── envio.py           Envio de vídeo ou áudio pelo painel (Fase 4)
+│   └── simulacao.py       Simulação ao vivo e teste da Azure no painel (Fase 4)
+└── multimodal/            Fase 4
+    ├── tipos.py           Contrato único: Anomalia
+    ├── tempo_real.py      Monitor: leituras em fluxo, detectores online
+    ├── alertas.py         Central de alertas: limiar, supressão, notificação, reconhecimento
+    ├── fusao.py           Escore de risco por paciente e regras de correlação
+    ├── envio.py           Gravação enviada pela equipe: salva, analisa, alerta, refaz a fusão
+    ├── relogio.py         Relógio do cenário x hora real
+    ├── demonstracao.py    Fluxo ponta a ponta (CLI e painel)
+    ├── azure/             Cliente REST, Speech (STT/TTS), Language (sentimento, Health)
+    ├── anomalias/         Sinais vitais, prescrições, movimentação, NEWS2, dados sintéticos
+    ├── audio/             Medidas acústicas, indicadores vocais, termos críticos, consultas
+    └── video/             YOLOv8: extração, rastreamento, quedas, exercício, áreas, relatório
 
 dados/brutos/              Corpus institucional sintético (protocolos, FAQ, prontuários)
+dados/brutos/monitoramento/ Séries de internação sintéticas, rótulos e tabela de referência
+dados/multimodal/          Datasets públicos e mídia gerada (fora do Git; make baixar-dados)
 dados/processados/         Dataset de fine-tuning + relatório da curadoria
-docs/                      Relatório técnico e diagramas
-avaliacao/                 Casos de red team e resultados
+docs/                      Relatórios técnicos (Fases 3 e 4) e diagramas
+avaliacao/                 Casos de red team e resultados (anomalias, áudio, vídeo)
 notebooks/                 Fine-tuning em GPU (Google Colab)
-tests/                     112 testes
+scripts/                   Geração de prontuários e download dos datasets
+tests/                     284 testes
 ```
 
 ---
@@ -343,9 +422,10 @@ Análise completa em [`docs/RELATORIO_TECNICO.md`](./docs/RELATORIO_TECNICO.md);
 
 | Documento | Conteúdo |
 |---|---|
-| [Relatório técnico](./docs/RELATORIO_TECNICO.md) | Decisões de arquitetura, processo de fine-tuning, avaliação e limitações |
-| [Roteiro do vídeo](./docs/ROTEIRO_VIDEO.md) | Divisão dos 15 minutos, comandos e pontos a destacar |
-| [Diagramas](./docs/diagramas/) | Fluxo LangGraph (gerado pelo grafo), arquitetura e pipeline de dados |
+| [Relatório técnico — Fase 4](./docs/RELATORIO_TECNICO_FASE4.md) | Fluxo multimodal, modelos por tipo de dado, Azure, alertas, resultados e exemplos de anomalias |
+| [Relatório técnico — Fase 3](./docs/RELATORIO_TECNICO.md) | Decisões de arquitetura, processo de fine-tuning, avaliação e limitações |
+| [Resultados](./avaliacao/resultados/) | `anomalias.md`, `audio.md`, `video.md` (Fase 4) e avaliação do fine-tuning (Fase 3) |
+| [Diagramas](./docs/diagramas/) | Fluxo multimodal, fluxo LangGraph (gerado pelo grafo), arquitetura e pipeline de dados |
 | [Notebook Colab](./notebooks/finetuning_colab.ipynb) | Fine-tuning em GPU NVIDIA, mesmo dataset |
 
 ---
@@ -353,12 +433,12 @@ Análise completa em [`docs/RELATORIO_TECNICO.md`](./docs/RELATORIO_TECNICO.md);
 ## Testes
 
 ```bash
-make testar             # 202 testes
-make cobertura          # relatório de cobertura (81%)
+make testar             # 284 testes
+make cobertura          # relatório de cobertura (79%)
 make lint               # ruff
 ```
 
-Os testes de integração usam o backend `eco`: o fluxo inteiro — triagem, contexto, regras, recuperação, guardrails, explicabilidade, validação e auditoria — é exercitado sem depender de um modelo baixado.
+Nenhum teste usa rede, Azure, YOLO ou os datasets baixados: as respostas da Azure são simuladas e o vídeo é testado com esqueletos sintéticos. Os testes de integração da Fase 3 usam o backend `eco`: o fluxo inteiro — triagem, contexto, regras, recuperação, guardrails, explicabilidade, validação e auditoria — é exercitado sem depender de um modelo baixado.
 
 | Arquivo | Cobre |
 |---|---|
@@ -371,6 +451,11 @@ Os testes de integração usam o backend `eco`: o fluxo inteiro — triagem, con
 | `test_construir_dataset.py` | os cinco geradores e a anonimização de tudo que chega ao treino |
 | `test_finetuning.py` | configuração do LoRA, parser de métricas, seleção de checkpoint e ROUGE-L |
 | `test_cadeias_e_cli.py` | as cadeias LCEL e os 8 subcomandos da linha de comando |
+| `test_multimodal_base.py` | contrato `Anomalia`, central de alertas (supressão, agravamento, reconhecimento), monitor em fluxo, cliente Azure simulado |
+| `test_anomalias.py` | NEWS2, episódios, as quatro camadas de sinais vitais, prescrições, movimentação, queda por acelerômetro e dados sintéticos |
+| `test_audio.py` | medidas acústicas em fala sintética, indicadores vocais, termos com negação, transcrição em trechos e Health assíncrono simulados |
+| `test_video.py` | queda, deitar controlado e em móvel com esqueletos sintéticos, rastreamento, exercício, assimetria com escorço, áreas críticas |
+| `test_fusao.py` | escore de risco, regras de correlação, alertas consolidados, relógio de cenário e a demonstração completa em modo local |
 
 ### Integração contínua
 

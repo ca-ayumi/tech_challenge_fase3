@@ -1,0 +1,28 @@
+{
+  "_aviso": "Tabela SINTETICA para fins didaticos do Tech Challenge. Nao e referencia clinica e nao deve orientar prescricao. Usada apenas para detectar alteracoes inesperadas no historico de prescricoes.",
+  "medicamentos": {
+    "amoxicilina com clavulanato": {"classe": "antimicrobiano", "grupos_alergenicos": ["penicilina", "betalactamico"], "dose_maxima_diaria": 4000, "unidade": "mg", "suspensao_critica": true},
+    "azitromicina": {"classe": "antimicrobiano", "grupos_alergenicos": ["macrolideo"], "dose_maxima_diaria": 500, "unidade": "mg", "suspensao_critica": false},
+    "atenolol": {"classe": "betabloqueador", "grupos_alergenicos": [], "dose_maxima_diaria": 100, "unidade": "mg", "suspensao_critica": true},
+    "cefazolina": {"classe": "antimicrobiano", "grupos_alergenicos": ["cefalosporina", "betalactamico"], "dose_maxima_diaria": 12000, "unidade": "mg", "suspensao_critica": true},
+    "ceftriaxona": {"classe": "antimicrobiano", "grupos_alergenicos": ["cefalosporina", "betalactamico"], "dose_maxima_diaria": 4000, "unidade": "mg", "suspensao_critica": true},
+    "dipirona": {"classe": "analgesico", "grupos_alergenicos": ["dipirona", "pirazolona"], "dose_maxima_diaria": 4000, "unidade": "mg", "suspensao_critica": false},
+    "enoxaparina": {"classe": "anticoagulante", "grupos_alergenicos": ["heparina"], "dose_maxima_diaria": 200, "unidade": "mg", "suspensao_critica": true, "sem_duplicidade": true},
+    "furosemida": {"classe": "diuretico", "grupos_alergenicos": ["sulfonamida"], "dose_maxima_diaria": 600, "unidade": "mg", "suspensao_critica": false},
+    "heparina": {"classe": "anticoagulante", "grupos_alergenicos": ["heparina"], "dose_maxima_diaria": 40000, "unidade": "UI", "suspensao_critica": true, "sem_duplicidade": true},
+    "ibuprofeno": {"classe": "anti-inflamatorio", "grupos_alergenicos": ["anti-inflamatorio nao esteroidal", "aine"], "dose_maxima_diaria": 2400, "unidade": "mg", "suspensao_critica": false},
+    "insulina nph": {"classe": "insulina", "grupos_alergenicos": [], "dose_maxima_diaria": null, "unidade": "UI", "suspensao_critica": true},
+    "insulina regular em infusao continua": {"classe": "insulina", "grupos_alergenicos": [], "dose_maxima_diaria": null, "unidade": "UI/h", "suspensao_critica": true, "titulavel": true},
+    "levotiroxina": {"classe": "hormonio_tireoidiano", "grupos_alergenicos": [], "dose_maxima_diaria": 300, "unidade": "mcg", "suspensao_critica": false},
+    "losartana": {"classe": "anti-hipertensivo", "grupos_alergenicos": [], "dose_maxima_diaria": 100, "unidade": "mg", "suspensao_critica": false},
+    "metformina": {"classe": "antidiabetico_oral", "grupos_alergenicos": [], "dose_maxima_diaria": 2550, "unidade": "mg", "suspensao_critica": false},
+    "morfina": {"classe": "opioide", "grupos_alergenicos": ["morfina", "opioide"], "dose_maxima_diaria": null, "unidade": "mg", "suspensao_critica": false},
+    "noradrenalina": {"classe": "vasopressor", "grupos_alergenicos": [], "dose_maxima_diaria": null, "unidade": "mcg/kg/min", "suspensao_critica": true, "titulavel": true},
+    "omeprazol": {"classe": "inibidor_bomba_protons", "grupos_alergenicos": [], "dose_maxima_diaria": 80, "unidade": "mg", "suspensao_critica": false},
+    "paracetamol": {"classe": "analgesico", "grupos_alergenicos": ["paracetamol"], "dose_maxima_diaria": 4000, "unidade": "mg", "suspensao_critica": false},
+    "piperacilina com tazobactam": {"classe": "antimicrobiano", "grupos_alergenicos": ["penicilina", "betalactamico"], "dose_maxima_diaria": 18000, "unidade": "mg", "suspensao_critica": true},
+    "sinvastatina": {"classe": "estatina", "grupos_alergenicos": [], "dose_maxima_diaria": 80, "unidade": "mg", "suspensao_critica": false},
+    "sulfametoxazol com trimetoprima": {"classe": "antimicrobiano", "grupos_alergenicos": ["sulfametoxazol", "sulfonamida"], "dose_maxima_diaria": 3200, "unidade": "mg", "suspensao_critica": true},
+    "varfarina": {"classe": "anticoagulante", "grupos_alergenicos": [], "dose_maxima_diaria": null, "unidade": "mg", "suspensao_critica": true, "sem_duplicidade": true}
+  }
+}

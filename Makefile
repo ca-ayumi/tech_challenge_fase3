@@ -1,4 +1,6 @@
-.PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar
+.PHONY: ajuda instalar preparar treinar avaliar testar cobertura lint app perguntar limpar \
+	baixar-dados azure monitorar avaliar-anomalias audio-gerar audio-consultas avaliar-audio \
+	instalar-video video-exemplos avaliar-video demo fusao
 
 PY := .venv/bin/python
 PIP := .venv/bin/pip
@@ -14,6 +16,20 @@ ajuda:
 	@echo "  lint       Roda o ruff"
 	@echo "  app        Sobe a interface Streamlit"
 	@echo "  perguntar  Ex.: make perguntar P='Ha pendencia no leito PS-07?'"
+	@echo ""
+	@echo "Fase 4 - monitoramento multimodal:"
+	@echo "  demo               Fluxo completo: sinais, prescricoes, movimentacao, video, audio e fusao"
+	@echo "  fusao              Risco multimodal por paciente e alertas consolidados"
+	@echo "  baixar-dados       Baixa BIDMC e UR Fall (PhysioNet / Univ. de Rzeszow)"
+	@echo "  azure              Verifica as credenciais Azure (Speech e Language)"
+	@echo "  monitorar          Simula 24 h de monitoramento com alertas (A=3600 acelera)"
+	@echo "  avaliar-anomalias  Avalia os detectores e grava avaliacao/resultados/anomalias.md"
+	@echo "  audio-gerar        Sintetiza as consultas de exemplo (Azure Text to Speech)"
+	@echo "  audio-consultas    Analisa as consultas: voz, transcricao, termos criticos, alertas"
+	@echo "  avaliar-audio      Avalia a analise de audio e grava avaliacao/resultados/audio.md"
+	@echo "  instalar-video     Instala o YOLOv8 (ultralytics + PyTorch)"
+	@echo "  video-exemplos     Analisa os videos de exemplo (queda, exercicios) e gera relatorios"
+	@echo "  avaliar-video      Avalia a deteccao de queda por video no UR Fall"
 
 instalar:
 	python3.11 -m venv .venv
@@ -39,10 +55,49 @@ lint:
 	.venv/bin/ruff check assistente_medico tests scripts
 
 app:
-	.venv/bin/streamlit run assistente_medico/app/streamlit_app.py
+	.venv/bin/streamlit run assistente_medico/app/streamlit_app.py \
+		--server.fileWatcherType none \
+		--browser.gatherUsageStats false
 
 perguntar:
 	$(PY) -m assistente_medico.cli perguntar "$(P)" --explicar
 
 limpar:
 	rm -rf .pytest_cache .ruff_cache **/__pycache__ logs/*.log logs/*.jsonl
+
+baixar-dados:
+	$(PY) scripts/baixar_datasets.py --todos
+
+azure:
+	$(PY) -m assistente_medico.cli azure
+
+monitorar:
+	$(PY) -m assistente_medico.cli monitorar simular --horas 24 --aceleracao $(or $(A),0)
+
+avaliar-anomalias:
+	$(PY) -m assistente_medico.cli monitorar avaliar
+
+audio-gerar:
+	$(PY) -m assistente_medico.cli audio gerar
+
+audio-consultas:
+	$(PY) -m assistente_medico.cli audio consultas
+
+avaliar-audio:
+	$(PY) -m assistente_medico.cli audio avaliar
+
+instalar-video:
+	$(PIP) install -r requirements-video.txt
+
+video-exemplos:
+	$(PY) -m assistente_medico.cli video exemplos --anotar
+
+avaliar-video:
+	$(PY) -m assistente_medico.cli video extrair
+	$(PY) -m assistente_medico.cli video avaliar
+
+demo:
+	$(PY) -m assistente_medico.cli monitorar demo
+
+fusao:
+	$(PY) -m assistente_medico.cli monitorar fusao

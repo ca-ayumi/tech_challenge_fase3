@@ -1,7 +1,9 @@
 """Interface web do assistente medico (Streamlit).
 
-Cinco abas, espelhando o que a instituicao precisa ver:
+Seis abas, espelhando o que a instituicao precisa ver:
 
+- **Monitoramento** (Fase 4): risco multimodal por paciente, alertas
+  consolidados com reconhecimento pela equipe e evidencias de cada modalidade;
 - **Assistente**: a conversa, com a base da resposta sempre visivel;
 - **Painel**: pacientes internados e alertas abertos;
 - **Validacoes**: fila de sugestoes pendentes de decisao humana;
@@ -22,6 +24,7 @@ import streamlit as st
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from assistente_medico.app.monitoramento import aba_monitoramento  # noqa: E402
 from assistente_medico.auditoria import Auditoria, configurar_logging
 from assistente_medico.config import MODELO, NOME_ASSISTENTE, VERSAO_ASSISTENTE
 from assistente_medico.dados.banco import preparar_banco
@@ -300,16 +303,19 @@ def main() -> None:
 
     assistente = carregar_assistente(backend)
 
-    abas = st.tabs(["Assistente", "Painel", "Validações", "Auditoria", "Políticas"])
+    abas = st.tabs(["Monitoramento", "Assistente", "Painel", "Validações", "Auditoria",
+                    "Políticas"])
     with abas[0]:
-        aba_assistente(assistente, banco)
+        aba_monitoramento(banco)
     with abas[1]:
-        aba_painel(banco)
+        aba_assistente(assistente, banco)
     with abas[2]:
-        aba_validacoes(banco)
+        aba_painel(banco)
     with abas[3]:
-        aba_auditoria(banco)
+        aba_validacoes(banco)
     with abas[4]:
+        aba_auditoria(banco)
+    with abas[5]:
         aba_politicas()
 
 

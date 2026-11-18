@@ -1,0 +1,363 @@
+{
+  "gerado_em": "2026-11-15T20:28:29",
+  "voiced": {
+    "dataset": "PhysioNet VOICED (vogal /a/ sustentada, 8 kHz)",
+    "registros_analisados": 208,
+    "saudaveis": 57,
+    "patologicos": 151,
+    "medidas": {
+      "jitter_local": {
+        "auc": 0.65,
+        "mediana_saudavel": 0.0033,
+        "mediana_patologica": 0.0045
+      },
+      "shimmer_local": {
+        "auc": 0.631,
+        "mediana_saudavel": 0.0378,
+        "mediana_patologica": 0.0463
+      },
+      "hnr_db": {
+        "auc": 0.645,
+        "mediana_saudavel": 19.4438,
+        "mediana_patologica": 18.1543
+      }
+    },
+    "regressao_logistica_auc_cv5": 0.605
+  },
+  "condicoes": {
+    "particoes": {
+      "calibracao": {
+        "casos": [
+          {
+            "voz": "francisca",
+            "condicao": "normal",
+            "detectadas": [],
+            "acerto": true
+          },
+          {
+            "voz": "francisca",
+            "condicao": "fadiga",
+            "detectadas": [
+              "fadiga"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "francisca",
+            "condicao": "dispneia",
+            "detectadas": [
+              "dispneia"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "francisca",
+            "condicao": "disartria",
+            "detectadas": [
+              "disartria"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "antonio",
+            "condicao": "normal",
+            "detectadas": [],
+            "acerto": true
+          },
+          {
+            "voz": "antonio",
+            "condicao": "fadiga",
+            "detectadas": [
+              "fadiga"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "antonio",
+            "condicao": "dispneia",
+            "detectadas": [
+              "dispneia"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "antonio",
+            "condicao": "disartria",
+            "detectadas": [
+              "disartria"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "brenda",
+            "condicao": "normal",
+            "detectadas": [],
+            "acerto": true
+          },
+          {
+            "voz": "brenda",
+            "condicao": "fadiga",
+            "detectadas": [
+              "fadiga"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "brenda",
+            "condicao": "dispneia",
+            "detectadas": [
+              "dispneia"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "brenda",
+            "condicao": "disartria",
+            "detectadas": [
+              "disartria"
+            ],
+            "acerto": true
+          }
+        ],
+        "acertos": 12,
+        "total": 12
+      },
+      "teste": {
+        "casos": [
+          {
+            "voz": "donato",
+            "condicao": "normal",
+            "detectadas": [],
+            "acerto": true
+          },
+          {
+            "voz": "donato",
+            "condicao": "fadiga",
+            "detectadas": [
+              "fadiga"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "donato",
+            "condicao": "dispneia",
+            "detectadas": [
+              "dispneia"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "donato",
+            "condicao": "disartria",
+            "detectadas": [
+              "disartria"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "leila",
+            "condicao": "normal",
+            "detectadas": [],
+            "acerto": true
+          },
+          {
+            "voz": "leila",
+            "condicao": "fadiga",
+            "detectadas": [
+              "fadiga"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "leila",
+            "condicao": "dispneia",
+            "detectadas": [
+              "dispneia"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "leila",
+            "condicao": "disartria",
+            "detectadas": [
+              "disartria"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "fabio",
+            "condicao": "normal",
+            "detectadas": [],
+            "acerto": true
+          },
+          {
+            "voz": "fabio",
+            "condicao": "fadiga",
+            "detectadas": [
+              "fadiga"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "fabio",
+            "condicao": "dispneia",
+            "detectadas": [
+              "dispneia"
+            ],
+            "acerto": true
+          },
+          {
+            "voz": "fabio",
+            "condicao": "disartria",
+            "detectadas": [
+              "disartria"
+            ],
+            "acerto": true
+          }
+        ],
+        "acertos": 12,
+        "total": 12
+      }
+    }
+  },
+  "consultas": {
+    "casos": [
+      {
+        "prontuario": "117256",
+        "fontes": {
+          "comparacao": "linha de base do paciente",
+          "transcricao": "azure_speech",
+          "linguagem": "azure_language"
+        },
+        "voz": [],
+        "voz_ok": true,
+        "termos": [],
+        "termos_ok": true,
+        "negados": [],
+        "negados_ok": true,
+        "confianca_transcricao": 0.9368,
+        "anomalias": [],
+        "texto_anonimizado": "Estou me sentindo bem melhor, doutor. A dor no corte diminuiu bastante e ontem eu já consegui andar até o fim do corredor. Estou comendo direitinho e dormi a noite toda. Só queria saber quando vou poder ir para casa."
+      },
+      {
+        "prontuario": "208731",
+        "fontes": {
+          "comparacao": "linha de base do paciente",
+          "transcricao": "azure_speech",
+          "linguagem": "azure_language"
+        },
+        "voz": [
+          "fadiga"
+        ],
+        "voz_ok": true,
+        "termos": [
+          "fadiga"
+        ],
+        "termos_ok": true,
+        "negados": [],
+        "negados_ok": true,
+        "confianca_transcricao": 0.8863,
+        "anomalias": [
+          "voz_fadiga (moderada)",
+          "termo_critico_fadiga (moderada)"
+        ],
+        "texto_anonimizado": "Eu estou muito cansado, doutor. Não tenho força nem para levantar da cama. Desde ontem eu não tenho vontade de comer e passo o dia todo deitado. Parece que o corpo pesa."
+      },
+      {
+        "prontuario": "559120",
+        "fontes": {
+          "comparacao": "linha de base do paciente",
+          "transcricao": "azure_speech",
+          "linguagem": "azure_language"
+        },
+        "voz": [
+          "dispneia"
+        ],
+        "voz_ok": true,
+        "termos": [
+          "dispneia",
+          "febre"
+        ],
+        "termos_ok": true,
+        "negados": [],
+        "negados_ok": true,
+        "confianca_transcricao": 0.7825,
+        "anomalias": [
+          "voz_dispneia (alta)",
+          "termo_critico_dispneia (alta)",
+          "termo_critico_febre (moderada)"
+        ],
+        "texto_anonimizado": "Doutor eu? Estou com muita. Falta de ar desde ontem à noite. Qualquer coisa que eu faço, eu fico cansado para respirar, até para. Falar. A tosse continua com catarro amarelado. E eu tive febre de madrugada."
+      },
+      {
+        "prontuario": "553119",
+        "fontes": {
+          "comparacao": "linha de base do paciente",
+          "transcricao": "azure_speech",
+          "linguagem": "azure_language"
+        },
+        "voz": [
+          "disartria"
+        ],
+        "voz_ok": true,
+        "termos": [
+          "deficit_neurologico"
+        ],
+        "termos_ok": true,
+        "negados": [],
+        "negados_ok": true,
+        "confianca_transcricao": 0.8592,
+        "anomalias": [
+          "voz_disartria (alta)",
+          "termo_critico_deficit_neurologico (critica)",
+          "sofrimento_referido (baixa)"
+        ],
+        "texto_anonimizado": "Eu acordei, a minha fala estava enrolada. O meu braço direito está fraco e eu não consigo segurar o copo. Aninha, filha, disse que é minha boca. Está torta?"
+      },
+      {
+        "prontuario": "771203",
+        "fontes": {
+          "comparacao": "linha de base do paciente",
+          "transcricao": "azure_speech",
+          "linguagem": "azure_language"
+        },
+        "voz": [],
+        "voz_ok": true,
+        "termos": [
+          "dor_toracica"
+        ],
+        "termos_ok": true,
+        "negados": [],
+        "negados_ok": true,
+        "confianca_transcricao": 0.9519,
+        "anomalias": [
+          "termo_critico_dor_toracica (critica)",
+          "sofrimento_referido (baixa)"
+        ],
+        "texto_anonimizado": "Doutor, eu estou com uma dor no peito muito forte, apertando que vai para o braço esquerdo. Começou faz 1 hora e eu estou suando frio. Eu fiquei com muito medo."
+      },
+      {
+        "prontuario": "875431",
+        "fontes": {
+          "comparacao": "linha de base do paciente",
+          "transcricao": "azure_speech",
+          "linguagem": "azure_language"
+        },
+        "voz": [],
+        "voz_ok": true,
+        "termos": [],
+        "termos_ok": true,
+        "negados": [
+          "dispneia",
+          "dor_toracica"
+        ],
+        "negados_ok": true,
+        "confianca_transcricao": 0.8772,
+        "anomalias": [],
+        "texto_anonimizado": "Meu nome é [PACIENTE_87D8]. Não tenho dor no peito e nem falta de ar. A tosse está melhorando e o catarro diminuiu. Só dormi mal porque fiquei agitado de madrugada, mas agora estou tranquilo."
+      }
+    ],
+    "acertos": 6,
+    "total": 6
+  }
+}
